@@ -24,6 +24,7 @@ import {
   Github,
   Globe,
   GraduationCap,
+  Instagram,
   Linkedin,
   Lock,
   Mail,
@@ -318,21 +319,18 @@ export default function App() {
     setIsSubmitting(true);
     setFormError("");
     try {
-      const res = await fetch(
-        "https://formspree.io/dhruvsharmads0506@gmail.com",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({
-            name: contactForm.name,
-            email: contactForm.email,
-            message: contactForm.message,
-          }),
+      const res = await fetch("https://formspree.io/f/mjgagljk", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-      );
+        body: JSON.stringify({
+          name: contactForm.name,
+          email: contactForm.email,
+          message: contactForm.message,
+        }),
+      });
       if (res.ok) {
         setFormSubmitted(true);
         setContactForm({ name: "", email: "", message: "" });
@@ -510,7 +508,7 @@ export default function App() {
               {/* Profile image */}
               <div className="w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 rounded-full overflow-hidden profile-ring float-anim">
                 <img
-                  src="/assets/generated/dhruv-profile.dim_400x400.jpg"
+                  src="/assets/uploads/1763988470672-1.jpg"
                   alt="Dhruv Sharma"
                   className="w-full h-full object-cover"
                 />
@@ -1355,7 +1353,7 @@ export default function App() {
                 </h3>
                 <div className="flex gap-3">
                   <a
-                    href="https://github.com/"
+                    href="https://github.com/dhruvsharmads0506"
                     target="_blank"
                     rel="noopener noreferrer"
                     data-ocid="contact.link"
@@ -1370,7 +1368,7 @@ export default function App() {
                     GitHub
                   </a>
                   <a
-                    href="https://linkedin.com/"
+                    href="https://www.linkedin.com/in/dhruvsharma0506"
                     target="_blank"
                     rel="noopener noreferrer"
                     data-ocid="contact.link"
@@ -1383,6 +1381,21 @@ export default function App() {
                   >
                     <Linkedin className="w-4 h-4" />
                     LinkedIn
+                  </a>
+                  <a
+                    href="https://www.instagram.com/dhruv_s_0506"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-ocid="contact.link"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-mono text-sm"
+                    style={{
+                      border: "1px solid oklch(0.82 0.18 195 / 0.3)",
+                      color: "oklch(0.75 0.04 220)",
+                      backgroundColor: "#0f1830",
+                    }}
+                  >
+                    <Instagram className="w-4 h-4" />
+                    Instagram
                   </a>
                 </div>
               </div>
@@ -1574,7 +1587,7 @@ export default function App() {
 
             <div className="flex items-center gap-4">
               <a
-                href="https://github.com/"
+                href="https://github.com/dhruvsharmads0506"
                 target="_blank"
                 rel="noopener noreferrer"
                 data-ocid="footer.link"
@@ -1585,7 +1598,7 @@ export default function App() {
                 <Github className="w-5 h-5" />
               </a>
               <a
-                href="https://linkedin.com/"
+                href="https://www.linkedin.com/in/dhruvsharma0506"
                 target="_blank"
                 rel="noopener noreferrer"
                 data-ocid="footer.link"
@@ -1594,6 +1607,17 @@ export default function App() {
                 aria-label="LinkedIn"
               >
                 <Linkedin className="w-5 h-5" />
+              </a>
+              <a
+                href="https://www.instagram.com/dhruv_s_0506"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-ocid="footer.link"
+                className="transition-colors hover:text-[#00d4ff]"
+                style={{ color: "oklch(0.55 0.04 220)" }}
+                aria-label="Instagram"
+              >
+                <Instagram className="w-5 h-5" />
               </a>
               <a
                 href="mailto:dhruvsharmads0506@gmail.com"
@@ -1605,22 +1629,6 @@ export default function App() {
                 <Mail className="w-5 h-5" />
               </a>
             </div>
-
-            <p
-              className="font-mono text-xs"
-              style={{ color: "oklch(0.4 0.03 220)" }}
-            >
-              Built with ❤️ using{" "}
-              <a
-                href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-[#00d4ff] transition-colors"
-                style={{ color: "oklch(0.5 0.05 200)" }}
-              >
-                caffeine.ai
-              </a>
-            </p>
           </div>
         </div>
       </footer>
