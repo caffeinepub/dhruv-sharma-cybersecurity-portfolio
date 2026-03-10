@@ -70,35 +70,43 @@ interface Project {
 const certs: Cert[] = [
   {
     id: 1,
-    title: "Introduction to Cyber Security",
-    issuer: "Cisco Networking Academy",
-    image: "/assets/generated/cert-cisco.dim_800x600.jpg",
+    title: "Introduction to MongoDB (For Students)",
+    issuer: "MongoDB",
+    image: "/assets/uploads/image-7-1.png",
+    color: "green",
+    badgeColor: "bg-green-100 text-green-700 border-green-300",
+  },
+  {
+    id: 2,
+    title: "Introduction to Generative AI",
+    issuer: "Google Cloud / Simplilearn",
+    image: "/assets/uploads/image-8-2.png",
     color: "blue",
     badgeColor: "bg-blue-100 text-blue-700 border-blue-300",
   },
   {
-    id: 2,
-    title: "Cloud Security Fundamentals",
-    issuer: "Palo Alto Networks",
-    image: "/assets/generated/cert-paloalto-cloud.dim_800x600.jpg",
-    color: "orange",
-    badgeColor: "bg-orange-100 text-orange-700 border-orange-300",
-  },
-  {
     id: 3,
-    title: "Network Security Fundamentals",
-    issuer: "Palo Alto Networks",
-    image: "/assets/generated/cert-paloalto-network.dim_800x600.jpg",
-    color: "orange",
-    badgeColor: "bg-orange-100 text-orange-700 border-orange-300",
+    title: "Introduction to Cybersecurity",
+    issuer: "Cisco Networking Academy",
+    image: "/assets/uploads/image-10-4.png",
+    color: "cyan",
+    badgeColor: "bg-cyan-100 text-cyan-700 border-cyan-300",
   },
   {
     id: 4,
-    title: "AI Foundation Associate",
-    issuer: "Oracle Certified",
-    image: "/assets/generated/cert-oracle.dim_800x600.jpg",
-    color: "red",
-    badgeColor: "bg-red-100 text-red-700 border-red-300",
+    title: "Cloud Security Fundamentals",
+    issuer: "Palo Alto Networks Cybersecurity Academy",
+    image: "/assets/uploads/image-11-5.png",
+    color: "orange",
+    badgeColor: "bg-orange-100 text-orange-700 border-orange-300",
+  },
+  {
+    id: 5,
+    title: "Certificate of Appreciation – Illuminate Bootcamp",
+    issuer: "E-Cell, IIT Bombay",
+    image: "/assets/uploads/image-13-7.png",
+    color: "yellow",
+    badgeColor: "bg-yellow-100 text-yellow-700 border-yellow-300",
   },
 ];
 
@@ -872,7 +880,7 @@ export default function App() {
               {/* Profile image */}
               <div className="w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 rounded-full overflow-hidden profile-ring float-anim">
                 <img
-                  src="/assets/uploads/1763988470672-1.jpg"
+                  src="/assets/uploads/dhruv-Pic-1-1.jpg"
                   alt="Dhruv Sharma"
                   className="w-full h-full object-cover"
                 />
@@ -1008,7 +1016,7 @@ export default function App() {
               >
                 {[
                   { label: "Projects", value: "3+" },
-                  { label: "Certifications", value: "4" },
+                  { label: "Certifications", value: "5" },
                   { label: "CGPA", value: "8+" },
                 ].map((stat) => (
                   <div key={stat.label} className="text-center">
