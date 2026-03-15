@@ -1,627 +1,398 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Award,
-  BookOpen,
-  Bug,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Cloud,
-  Code2,
-  Database,
-  Download,
-  ExternalLink,
-  Eye,
-  GitBranch,
-  Github,
-  Globe,
-  GraduationCap,
-  Instagram,
-  Linkedin,
-  Lock,
-  Mail,
-  MapPin,
-  Menu,
-  Moon,
-  Phone,
-  Shield,
-  Sun,
-  Terminal,
-  Trophy,
-  Wifi,
-  Wrench,
-  X,
-  Zap,
-} from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-// ─── Types ────────────────────────────────────────────────────
-interface Cert {
-  id: number;
-  title: string;
-  issuer: string;
-  image: string;
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface SkillCategory {
+  name: string;
   color: string;
-  badgeColor: string;
+  bgColor: string;
+  borderColor: string;
+  skills: string[];
 }
 
 interface Project {
-  id: number;
   title: string;
-  subtitle: string;
   description: string;
   tags: string[];
-  icon: React.ReactNode;
-  ocid: string;
+  github?: string;
+  live?: string;
+  color: string;
 }
 
-// ─── Data ─────────────────────────────────────────────────────
-const certs: Cert[] = [
-  {
-    id: 1,
-    title: "Introduction to MongoDB (For Students)",
-    issuer: "MongoDB",
-    image: "/assets/uploads/image-7-1.png",
-    color: "green",
-    badgeColor: "bg-green-100 text-green-700 border-green-300",
-  },
-  {
-    id: 2,
-    title: "Introduction to Generative AI",
-    issuer: "Google Cloud / Simplilearn",
-    image: "/assets/uploads/image-8-2.png",
-    color: "blue",
-    badgeColor: "bg-blue-100 text-blue-700 border-blue-300",
-  },
-  {
-    id: 3,
-    title: "Introduction to Cybersecurity",
-    issuer: "Cisco Networking Academy",
-    image: "/assets/uploads/image-10-4.png",
-    color: "cyan",
-    badgeColor: "bg-cyan-100 text-cyan-700 border-cyan-300",
-  },
-  {
-    id: 4,
-    title: "Cloud Security Fundamentals",
-    issuer: "Palo Alto Networks Cybersecurity Academy",
-    image: "/assets/uploads/image-11-5.png",
-    color: "orange",
-    badgeColor: "bg-orange-100 text-orange-700 border-orange-300",
-  },
-  {
-    id: 5,
-    title: "Certificate of Appreciation – Illuminate Bootcamp",
-    issuer: "E-Cell, IIT Bombay",
-    image: "/assets/uploads/image-13-7.png",
-    color: "yellow",
-    badgeColor: "bg-yellow-100 text-yellow-700 border-yellow-300",
-  },
-];
+interface Certificate {
+  title: string;
+  issuer: string;
+  image: string;
+}
 
-const projects: Project[] = [
-  {
-    id: 1,
-    title: "TinyTRaIL",
-    subtitle: "Full Stack URL Shortener",
-    description:
-      "A full-stack URL shortening platform built with Node.js and JavaScript. Features JWT authentication, QR code generation for each short link, and efficient SQL database storage for link management.",
-    tags: ["Node.js", "JavaScript", "JWT", "QR Code", "SQL"],
-    icon: <Globe className="w-6 h-6" />,
-    ocid: "projects.item.1",
-  },
-  {
-    id: 2,
-    title: "Port Scanner",
-    subtitle: "Cybersecurity Tool",
-    description:
-      "A Python-based network port scanner leveraging socket programming to identify open ports and exposed services on target systems. Helps security professionals enumerate network attack surfaces.",
-    tags: ["Python", "Socket Programming", "Network Security", "Pentesting"],
-    icon: <Wifi className="w-6 h-6" />,
-    ocid: "projects.item.2",
-  },
-  {
-    id: 3,
-    title: "Vulnerability Scanner",
-    subtitle: "Security Tool",
-    description:
-      "An automated vulnerability scanning tool that detects system security risks and weak configurations. Generates detailed security reports with prioritized remediation steps for identified vulnerabilities.",
-    tags: [
-      "Python",
-      "Security Automation",
-      "Vulnerability Assessment",
-      "Reports",
-    ],
-    icon: <Bug className="w-6 h-6" />,
-    ocid: "projects.item.3",
-  },
-];
+interface Education {
+  institution: string;
+  degree: string;
+  period: string;
+  detail?: string;
+}
 
-const skillCategories = [
+interface Achievement {
+  title: string;
+  description: string;
+  icon: string;
+}
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+const SKILL_CATEGORIES: SkillCategory[] = [
   {
-    label: "Programming",
-    icon: <Code2 className="w-4 h-4" />,
-    skills: ["C", "C++", "JavaScript", "Python"],
-    accent: "#2563eb",
-    darkAccent: "#22d3ee",
+    name: "Programming",
+    color: "#2563eb",
+    bgColor: "#eff6ff",
+    borderColor: "#bfdbfe",
+    skills: ["Python", "C", "C++", "JavaScript"],
   },
   {
-    label: "Web Development",
-    icon: <Globe className="w-4 h-4" />,
-    skills: ["HTML", "CSS", "JavaScript", "React", "Node.js"],
-    accent: "#7c3aed",
-    darkAccent: "#00ff88",
+    name: "Web Development",
+    color: "#7c3aed",
+    bgColor: "#f5f3ff",
+    borderColor: "#ddd6fe",
+    skills: ["HTML", "CSS", "React", "Node.js"],
   },
   {
-    label: "Databases",
-    icon: <Database className="w-4 h-4" />,
-    skills: ["SQL", "MySQL"],
-    accent: "#0891b2",
-    darkAccent: "#22d3ee",
+    name: "Database",
+    color: "#0891b2",
+    bgColor: "#ecfeff",
+    borderColor: "#a5f3fc",
+    skills: ["MySQL", "SQL", "MongoDB"],
   },
   {
-    label: "Cybersecurity Tools",
-    icon: <Shield className="w-4 h-4" />,
+    name: "Artificial Intelligence",
+    color: "#d97706",
+    bgColor: "#fffbeb",
+    borderColor: "#fde68a",
     skills: [
-      "Kali Linux",
-      "Nmap",
-      "Metasploit",
-      "Wireshark",
-      "SEToolkit",
-      "Zphisher",
-      "Crunch",
-      "CeWL",
-      "zip2john",
+      "Machine Learning Basics",
+      "Data Preprocessing",
+      "Model Evaluation",
+      "Prompt Engineering",
+      "NumPy",
+      "Pandas",
+      "Scikit-learn",
+      "TensorFlow (Basic)",
     ],
-    accent: "#dc2626",
-    darkAccent: "#00ff88",
   },
   {
-    label: "Cloud",
-    icon: <Cloud className="w-4 h-4" />,
-    skills: ["AWS Fundamentals"],
-    accent: "#d97706",
-    darkAccent: "#22d3ee",
+    name: "Security Concepts",
+    color: "#dc2626",
+    bgColor: "#fef2f2",
+    borderColor: "#fecaca",
+    skills: [
+      "Penetration Testing",
+      "Vulnerability Assessment",
+      "Web Security Testing",
+      "Google Dorking",
+      "OWASP Top 10",
+    ],
   },
   {
-    label: "DevOps",
-    icon: <GitBranch className="w-4 h-4" />,
-    skills: ["Git", "GitHub"],
-    accent: "#16a34a",
-    darkAccent: "#00ff88",
-  },
-  {
-    label: "Core Concepts",
-    icon: <BookOpen className="w-4 h-4" />,
+    name: "Core Subjects",
+    color: "#059669",
+    bgColor: "#ecfdf5",
+    borderColor: "#a7f3d0",
     skills: [
       "Data Structures",
       "OOP",
       "DBMS",
       "Operating Systems",
       "Computer Networks",
-      "SDLC",
+      "Cloud Computing",
     ],
-    accent: "#2563eb",
-    darkAccent: "#22d3ee",
   },
   {
-    label: "Dev Tools",
-    icon: <Wrench className="w-4 h-4" />,
-    skills: ["VS Code", "Postman", "MySQL Workbench"],
-    accent: "#7c3aed",
-    darkAccent: "#00ff88",
+    name: "Cybersecurity Tools",
+    color: "#be185d",
+    bgColor: "#fdf2f8",
+    borderColor: "#fbcfe8",
+    skills: [
+      "Kali Linux",
+      "Nmap",
+      "Metasploit",
+      "Wireshark",
+      "Hash Identifier",
+      "CeWL",
+      "Crunch",
+      "HTTrack",
+    ],
+  },
+  {
+    name: "Development Tools",
+    color: "#1d4ed8",
+    bgColor: "#eff6ff",
+    borderColor: "#bfdbfe",
+    skills: ["Git", "GitHub", "VS Code", "Postman"],
+  },
+  {
+    name: "Other Tools",
+    color: "#6d28d9",
+    bgColor: "#f5f3ff",
+    borderColor: "#ddd6fe",
+    skills: ["Docker (Basic)", "Linux CLI", "Jupyter Notebook", "Google Colab"],
   },
 ];
 
-// ─── Hero Background ───────────────────────────────────────────
-function HeroBg({ darkMode }: { darkMode: boolean }) {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute inset-0 grid-pattern opacity-70" />
-      <div
-        className="absolute inset-0"
-        style={{
-          background: darkMode
-            ? "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,255,136,0.06) 0%, transparent 70%)"
-            : "radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.52 0.24 262 / 0.08) 0%, transparent 70%)",
-        }}
-      />
-      <div
-        className="absolute top-0 left-0 w-96 h-96 opacity-30"
-        style={{
-          background: darkMode
-            ? "radial-gradient(circle at 0% 0%, rgba(34,211,238,0.15), transparent 60%)"
-            : "radial-gradient(circle at 0% 0%, oklch(0.52 0.24 262 / 0.2), transparent 60%)",
-        }}
-      />
-      <div
-        className="absolute bottom-0 right-0 w-96 h-96 opacity-30"
-        style={{
-          background: darkMode
-            ? "radial-gradient(circle at 100% 100%, rgba(0,255,136,0.1), transparent 60%)"
-            : "radial-gradient(circle at 100% 100%, oklch(0.55 0.22 293 / 0.2), transparent 60%)",
-        }}
-      />
-    </div>
-  );
-}
+const PROJECTS: Project[] = [
+  {
+    title: "TinyTRaIL",
+    description:
+      "Full Stack URL Shortener with JWT authentication, QR code generation, and SQL database. Clean UI with analytics dashboard.",
+    tags: ["Node.js", "JWT", "QR Code", "SQL", "Full Stack"],
+    github: "https://github.com/dhruvsharmads0506/Tinytrail-links",
+    live: "https://tinytrail-links.netlify.app",
+    color: "#2563eb",
+  },
+  {
+    title: "CyberPort Scanner",
+    description:
+      "Python-based port scanner using raw sockets for network reconnaissance. Fast, efficient, and outputs detailed service info.",
+    tags: ["Python", "Sockets", "Networking", "Cybersecurity"],
+    github: "https://github.com/dhruvsharmads0506/cyberport-scanner",
+    live: "https://cyberport-scanner.vercel.app/",
+    color: "#dc2626",
+  },
+  {
+    title: "Vulnerability Scanner",
+    description:
+      "Automated vulnerability scanning tool with detailed reporting. Identifies common security weaknesses in web applications.",
+    tags: ["Python", "Security", "Automation", "Reporting"],
+    color: "#7c3aed",
+  },
+];
 
-// ─── Terminal Tag ──────────────────────────────────────────────
-function TerminalTag({ text, darkMode }: { text: string; darkMode?: boolean }) {
+const CERTIFICATES: Certificate[] = [
+  {
+    title: "Introduction to MongoDB",
+    issuer: "MongoDB University",
+    image: "/assets/uploads/image-7-1.png",
+  },
+  {
+    title: "Introduction to Generative AI",
+    issuer: "Google Cloud / Simplilearn",
+    image: "/assets/uploads/image-8-2.png",
+  },
+  {
+    title: "Introduction to Cybersecurity",
+    issuer: "Cisco",
+    image: "/assets/uploads/image-10-4.png",
+  },
+  {
+    title: "Cloud Security Fundamentals",
+    issuer: "Palo Alto Networks",
+    image: "/assets/uploads/image-11-5.png",
+  },
+  {
+    title: "Certificate of Appreciation – Illuminate Bootcamp",
+    issuer: "E-Cell IIT Bombay",
+    image: "/assets/uploads/image-13-7.png",
+  },
+];
+
+const EDUCATION: Education[] = [
+  {
+    institution: "GL Bajaj Group of Institutions",
+    degree: "B.Tech CSE AI – Honours in Cybersecurity",
+    period: "2022 – 2026",
+    detail: "CGPA: 8+",
+  },
+  {
+    institution: "Aviraj World School",
+    degree: "Senior Secondary (12th)",
+    period: "2020 – 2022",
+  },
+  {
+    institution: "RDS Public School",
+    degree: "Secondary (10th)",
+    period: "Until 2020",
+  },
+];
+
+const ACHIEVEMENTS: Achievement[] = [
+  {
+    title: "Smart India Hackathon 2025",
+    description: "Team Lead – Internal Round Qualified",
+    icon: "🏆",
+  },
+  {
+    title: "TryHackMe & Hack The Box",
+    description: "Practiced cybersecurity labs; hands-on pentesting experience",
+    icon: "🔐",
+  },
+  {
+    title: "PortSwigger Web Security",
+    description:
+      "Practiced web security labs covering OWASP Top 10 vulnerabilities",
+    icon: "🕷️",
+  },
+  {
+    title: "National Service Scheme (NSS)",
+    description: "Active member contributing to community service initiatives",
+    icon: "🤝",
+  },
+  {
+    title: "Rotaract Club",
+    description: "Member – GL Bajaj chapter, community & leadership activities",
+    icon: "🌐",
+  },
+  {
+    title: "Shrinik Club",
+    description: "Technical club member participating in workshops and events",
+    icon: "⚡",
+  },
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function SunIcon() {
   return (
-    <span
-      className="font-mono text-xs px-2 py-1 rounded-md inline-block"
-      style={{
-        background: darkMode
-          ? "rgba(0,255,136,0.1)"
-          : "oklch(0.52 0.24 262 / 0.1)",
-        color: darkMode ? "#00ff88" : "oklch(0.42 0.18 262)",
-        border: darkMode
-          ? "1px solid rgba(0,255,136,0.3)"
-          : "1px solid oklch(0.52 0.24 262 / 0.2)",
-      }}
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      role="img"
+      aria-label="Sun"
     >
-      &gt; {text}
-    </span>
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
   );
 }
 
-// ─── Section Header ────────────────────────────────────────────
-function SectionHeader({
-  tag,
-  title,
-  subtitle,
-  darkMode,
-}: { tag: string; title: string; subtitle?: string; darkMode?: boolean }) {
+function MoonIcon() {
   return (
-    <motion.div
-      className="mb-12"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      role="img"
+      aria-label="Moon"
     >
-      <TerminalTag text={tag} darkMode={darkMode} />
-      <h2
-        className="text-3xl md:text-4xl font-bold mt-3 section-title"
-        style={{
-          color: darkMode ? "#e2e8f0" : "#0f172a",
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-        }}
-      >
-        {title}
-      </h2>
-      {subtitle && (
-        <p
-          className="mt-4 max-w-2xl text-base leading-relaxed"
-          style={{ color: darkMode ? "#94a3b8" : "#64748b" }}
-        >
-          {subtitle}
-        </p>
-      )}
-    </motion.div>
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
   );
 }
 
-// ─── Cert Slideshow ────────────────────────────────────────────
-function CertSlideshow({
-  darkMode,
-  onViewDetails,
-}: {
-  darkMode: boolean;
-  onViewDetails: (cert: Cert) => void;
-}) {
-  const [current, setCurrent] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const [direction, setDirection] = useState(1);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const goTo = (idx: number, dir: number) => {
-    setDirection(dir);
-    setCurrent(idx);
-  };
-
-  const prev = () => {
-    const idx = (current - 1 + certs.length) % certs.length;
-    goTo(idx, -1);
-  };
-
-  const next = () => {
-    const idx = (current + 1) % certs.length;
-    goTo(idx, 1);
-  };
-
-  useEffect(() => {
-    if (!paused) {
-      intervalRef.current = setInterval(() => {
-        setDirection(1);
-        setCurrent((c) => (c + 1) % certs.length);
-      }, 3500);
-    }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [paused]);
-
-  const cert = certs[current];
-
-  const cardBg = darkMode ? "#0d1a2e" : "#ffffff";
-  const cardBorder = darkMode
-    ? "1px solid rgba(0,255,136,0.2)"
-    : "1px solid #e2e8f0";
-  const cardShadow = darkMode
-    ? "0 20px 60px rgba(0,255,136,0.1), 0 4px 24px rgba(0,0,0,0.4)"
-    : "0 20px 60px rgba(37,99,235,0.12), 0 4px 24px rgba(0,0,0,0.05)";
-
-  const variants = {
-    enter: (d: number) => ({ x: d > 0 ? 300 : -300, opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit: (d: number) => ({ x: d > 0 ? -300 : 300, opacity: 0 }),
-  };
-
+function GithubIcon() {
   return (
-    <div
-      className="flex flex-col items-center"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      role="img"
+      aria-label="GitHub"
     >
-      {/* Main card */}
-      <div
-        className="relative w-full max-w-2xl rounded-2xl overflow-hidden"
-        style={{
-          background: cardBg,
-          border: cardBorder,
-          boxShadow: cardShadow,
-        }}
-      >
-        {/* Image area */}
-        <div
-          className="relative overflow-hidden"
-          style={{
-            height: "340px",
-            background: darkMode ? "#070f1c" : "#f8fafc",
-          }}
-        >
-          <AnimatePresence custom={direction} mode="wait">
-            <motion.img
-              key={cert.id}
-              src={cert.image}
-              alt={cert.title}
-              custom={direction}
-              variants={variants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.45, ease: "easeInOut" }}
-              className="absolute inset-0 w-full h-full object-contain p-4"
-            />
-          </AnimatePresence>
-
-          {/* Gradient overlay at bottom */}
-          <div
-            className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
-            style={{
-              background: darkMode
-                ? "linear-gradient(to top, #0d1a2e, transparent)"
-                : "linear-gradient(to top, #ffffff, transparent)",
-            }}
-          />
-
-          {/* Arrow buttons */}
-          <motion.button
-            whileHover={{
-              scale: 1.1,
-              backgroundColor: darkMode
-                ? "rgba(0,255,136,0.2)"
-                : "rgba(37,99,235,0.12)",
-            }}
-            whileTap={{ scale: 0.95 }}
-            onClick={prev}
-            data-ocid="certs.secondary_button"
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-            style={{
-              background: darkMode
-                ? "rgba(10,15,26,0.8)"
-                : "rgba(255,255,255,0.85)",
-              border: darkMode
-                ? "1px solid rgba(0,255,136,0.3)"
-                : "1px solid #e2e8f0",
-              color: darkMode ? "#00ff88" : "#2563eb",
-              backdropFilter: "blur(8px)",
-            }}
-            type="button"
-            aria-label="Previous"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </motion.button>
-
-          <motion.button
-            whileHover={{
-              scale: 1.1,
-              backgroundColor: darkMode
-                ? "rgba(0,255,136,0.2)"
-                : "rgba(37,99,235,0.12)",
-            }}
-            whileTap={{ scale: 0.95 }}
-            onClick={next}
-            data-ocid="certs.primary_button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-            style={{
-              background: darkMode
-                ? "rgba(10,15,26,0.8)"
-                : "rgba(255,255,255,0.85)",
-              border: darkMode
-                ? "1px solid rgba(0,255,136,0.3)"
-                : "1px solid #e2e8f0",
-              color: darkMode ? "#00ff88" : "#2563eb",
-              backdropFilter: "blur(8px)",
-            }}
-            type="button"
-            aria-label="Next"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </motion.button>
-        </div>
-
-        {/* Info area */}
-        <div className="px-6 py-5">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`${cert.id}-info`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-            >
-              <h3
-                className="font-mono text-lg font-bold mb-1"
-                style={{ color: darkMode ? "#e2e8f0" : "#1e293b" }}
-              >
-                {cert.title}
-              </h3>
-              <p
-                className="font-mono text-sm mb-4"
-                style={{ color: darkMode ? "#00ff88" : "#2563eb" }}
-              >
-                {cert.issuer}
-              </p>
-            </motion.div>
-          </AnimatePresence>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5" style={{ color: "#16a34a" }} />
-              <span
-                className="font-mono text-xs"
-                style={{ color: darkMode ? "#64748b" : "#94a3b8" }}
-              >
-                Verified credential
-              </span>
-            </div>
-            <Button
-              data-ocid="certs.open_modal_button"
-              variant="outline"
-              size="sm"
-              className="font-mono text-xs gap-2 transition-all"
-              style={{
-                border: darkMode
-                  ? "1.5px solid #00ff88"
-                  : "1.5px solid #2563eb",
-                color: darkMode ? "#00ff88" : "#2563eb",
-                backgroundColor: "transparent",
-              }}
-              onClick={() => onViewDetails(cert)}
-            >
-              <Eye className="w-3.5 h-3.5" />
-              View Details
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Dot indicators */}
-      <div className="flex items-center gap-2 mt-5">
-        {certs.map((cert, idx) => (
-          <motion.button
-            key={cert.id}
-            whileHover={{ scale: 1.3 }}
-            onClick={() => goTo(idx, idx > current ? 1 : -1)}
-            data-ocid="certs.toggle"
-            className="rounded-full transition-all"
-            style={{
-              width: idx === current ? "24px" : "8px",
-              height: "8px",
-              background:
-                idx === current
-                  ? darkMode
-                    ? "#00ff88"
-                    : "#2563eb"
-                  : darkMode
-                    ? "rgba(255,255,255,0.2)"
-                    : "#cbd5e1",
-            }}
-            type="button"
-            aria-label={`Go to certificate ${idx + 1}`}
-          />
-        ))}
-      </div>
-
-      {/* Counter */}
-      <p
-        className="font-mono text-xs mt-3"
-        style={{ color: darkMode ? "#475569" : "#94a3b8" }}
-      >
-        {current + 1} / {certs.length}
-      </p>
-    </div>
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12" />
+    </svg>
   );
 }
 
-// ─── Main App ──────────────────────────────────────────────────
+function LinkedInIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      role="img"
+      aria-label="LinkedIn"
+    >
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+    </svg>
+  );
+}
+
+function InstagramIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      role="img"
+      aria-label="Instagram"
+    >
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
+    </svg>
+  );
+}
+
+function EmailIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      role="img"
+      aria-label="Email"
+    >
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22,6 12,13 2,6" />
+    </svg>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [selectedCert, setSelectedCert] = useState<Cert | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("home");
-  const [darkMode, setDarkMode] = useState(false);
-  const [darkModeRotating, setDarkModeRotating] = useState(false);
-  const [contactForm, setContactForm] = useState({
+  const [isDark, setIsDark] = useState(false);
+  const [slideIndex, setSlideIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     message: "",
   });
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formError, setFormError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formStatus, setFormStatus] = useState<
+    "idle" | "sending" | "success" | "error"
+  >("idle");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const navLinks = [
-    { href: "#home", label: "Home" },
-    { href: "#skills", label: "Skills" },
-    { href: "#projects", label: "Projects" },
-    { href: "#certifications", label: "Certs" },
-    { href: "#education", label: "Education" },
-    { href: "#achievements", label: "Achievements" },
-    { href: "#contact", label: "Contact" },
-  ];
-
+  // Dark mode
   useEffect(() => {
-    const handleScroll = () => {
-      const sections = [
-        "home",
-        "skills",
-        "projects",
-        "certifications",
-        "education",
-        "achievements",
-        "contact",
-      ];
-      const scrollY = window.scrollY + 100;
-      for (const section of sections.reverse()) {
-        const el = document.getElementById(section);
-        if (el && el.offsetTop <= scrollY) {
-          setActiveSection(section);
-          return;
-        }
-      }
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, [isDark]);
+
+  // Slideshow auto-advance
+  const nextSlide = useCallback(() => {
+    setSlideIndex((i) => (i + 1) % CERTIFICATES.length);
   }, []);
 
-  async function handleContactSubmit(e: React.FormEvent) {
+  const prevSlide = useCallback(() => {
+    setSlideIndex((i) => (i - 1 + CERTIFICATES.length) % CERTIFICATES.length);
+  }, []);
+
+  useEffect(() => {
+    if (!isPaused) {
+      intervalRef.current = setInterval(nextSlide, 3500);
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isPaused, nextSlide]);
+
+  // Form submit
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setFormError("");
+    setFormStatus("sending");
     try {
       const res = await fetch("https://formspree.io/f/mjgagljk", {
         method: "POST",
@@ -629,1508 +400,1610 @@ export default function App() {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({
-          name: contactForm.name,
-          email: contactForm.email,
-          message: contactForm.message,
-        }),
+        body: JSON.stringify(formData),
       });
       if (res.ok) {
-        setFormSubmitted(true);
-        setContactForm({ name: "", email: "", message: "" });
+        setFormStatus("success");
+        setFormData({ name: "", email: "", message: "" });
       } else {
-        setFormError("Failed to send. Please try again or email directly.");
+        setFormStatus("error");
       }
     } catch {
-      setFormError("Network error. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+      setFormStatus("error");
     }
-  }
+  };
 
-  function toggleDarkMode() {
-    setDarkModeRotating(true);
-    setDarkMode((d) => !d);
-    setTimeout(() => setDarkModeRotating(false), 500);
-  }
+  // Styles
+  const bg = isDark ? "#020617" : "#eef1fb";
+  const fg = isDark ? "#e2e8f0" : "#1e293b";
+  const cardBg = isDark ? "#0f172a" : "#ffffff";
+  const cardBorder = isDark ? "#00e5a833" : "#e2e8f0";
+  const mutedFg = isDark ? "#94a3b8" : "#64748b";
+  const accent = isDark ? "#00e5a8" : "#2563eb";
+  const accentViolet = isDark ? "#3b82f6" : "#7c3aed";
+  const navBg = isDark ? "rgba(2,6,23,0.97)" : "rgba(238,241,251,0.92)";
+  const inputBg = isDark ? "#0b1120" : "#f8fafc";
+  const inputBorder = isDark ? "#00e5a84d" : "#cbd5e1";
+  const badgeBg = isDark ? "#00e5a81a" : undefined;
+  const badgeFg = isDark ? "#00e5a8" : undefined;
 
-  // ─── Dark mode style helpers ───────────────────────────────
-  const dm = darkMode;
-  const rootBg = dm ? "#0a0f1a" : "#f4f6ff";
-  const rootText = dm ? "#e2e8f0" : "#0f172a";
-  const navBg = dm ? "rgba(10,15,26,0.92)" : "rgba(255,255,255,0.92)";
-  const navBorder = dm
-    ? "1px solid rgba(0,255,136,0.1)"
-    : "1px solid oklch(0.88 0.025 255)";
-  const sectionBg = dm ? "#0a0f1a" : "#f4f6ff";
-  const sectionBgAlt = dm ? "#0d1220" : "#eef1fb";
-  const cardBg = dm ? "#0d1a2e" : "#f4f7ff";
-  const cardBorder = dm
-    ? "1px solid rgba(0,255,136,0.15)"
-    : "1px solid #e2e8f0";
-  const accentPrimary = dm ? "#00ff88" : "#2563eb";
-  const accentSecondary = dm ? "#22d3ee" : "#7c3aed";
-  const textMuted = dm ? "#64748b" : "#94a3b8";
-  const textBody = dm ? "#94a3b8" : "#64748b";
+  const sectionTitle = (text: string) => (
+    <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+      {isDark && (
+        <p
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            color: "#00e5a8",
+            fontSize: "0.78rem",
+            letterSpacing: "0.08em",
+            opacity: 0.7,
+            marginBottom: "0.5rem",
+          }}
+        >
+          {">"} cat ./{text.toLowerCase().replace(/ /g, "_")}/*
+        </p>
+      )}
+      <h2
+        style={{
+          fontSize: "clamp(1.75rem, 4vw, 2.5rem)",
+          fontWeight: 700,
+          color: fg,
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          letterSpacing: "-0.02em",
+        }}
+      >
+        {isDark ? (
+          <span>
+            <span style={{ color: "#00e5a8" }}>[</span>
+            {text}
+            <span style={{ color: "#00e5a8" }}>]</span>
+          </span>
+        ) : (
+          text
+        )}
+      </h2>
+      <div
+        style={{
+          width: isDark ? 80 : 60,
+          height: 3,
+          background: isDark
+            ? "linear-gradient(90deg, #00e5a8, #3b82f6)"
+            : `linear-gradient(90deg, ${accent}, ${accentViolet})`,
+          margin: "0.75rem auto 0",
+          borderRadius: 4,
+          boxShadow: isDark ? "0 0 10px #00e5a855" : "none",
+        }}
+      />
+    </div>
+  );
+
+  const navLinks = [
+    { label: "About", href: "#about" },
+    { label: "Skills", href: "#skills" },
+    { label: "Projects", href: "#projects" },
+    { label: "Certifications", href: "#certifications" },
+    { label: "Education", href: "#education" },
+    { label: "Achievements", href: "#achievements" },
+    { label: "Contact", href: "#contact" },
+  ];
 
   return (
     <div
-      className="min-h-screen transition-colors duration-500"
-      style={{ backgroundColor: rootBg, color: rootText }}
+      style={{
+        minHeight: "100vh",
+        background: isDark
+          ? "linear-gradient(135deg, #020617 0%, #0b1120 100%)"
+          : bg,
+        color: fg,
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        transition: "background 0.4s, color 0.4s",
+        position: "relative",
+      }}
     >
-      {/* ─── Navbar ─────────────────────────────────────────── */}
-      <header
-        className="fixed top-0 left-0 right-0 z-50 transition-colors duration-500"
+      {/* ── Navbar ── */}
+      <nav
         style={{
-          backgroundColor: navBg,
-          backdropFilter: "blur(16px)",
-          borderBottom: navBorder,
-          boxShadow: dm
-            ? "0 1px 12px rgba(0,255,136,0.06)"
-            : "0 1px 12px rgba(37,99,235,0.08)",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          background: navBg,
+          backdropFilter: "blur(12px)",
+          borderBottom: isDark
+            ? "1px solid rgba(0,229,168,0.12)"
+            : `1px solid ${cardBorder}`,
+          boxShadow: isDark ? "0 1px 20px rgba(0,0,0,0.5)" : "none",
+          padding: "0 1.5rem",
         }}
       >
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div
+          style={{
+            maxWidth: 1100,
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            height: 64,
+          }}
+        >
           {/* Logo */}
-          <a
-            href="#home"
-            className="flex items-center gap-2 group"
-            data-ocid="nav.link"
+          <span
+            style={{
+              fontWeight: 800,
+              fontSize: "1.2rem",
+              color: fg,
+              letterSpacing: "-0.02em",
+            }}
           >
-            <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center font-mono font-bold text-sm transition-all"
-              style={{
-                background: dm
-                  ? "linear-gradient(135deg, #00ff88, #22d3ee)"
-                  : "linear-gradient(135deg, #2563eb, #7c3aed)",
-                color: dm ? "#0a0f1a" : "#ffffff",
-                boxShadow: dm
-                  ? "0 2px 8px rgba(0,255,136,0.35)"
-                  : "0 2px 8px rgba(37,99,235,0.35)",
-              }}
-            >
-              DS
-            </div>
-            <span
-              className="font-mono text-sm hidden sm:block font-semibold"
-              style={{ color: accentPrimary }}
-            >
-              dhruv@sec:~$
-            </span>
-          </a>
+            Dhruv <span style={{ color: accent }}>Sharma</span>
+          </span>
 
-          {/* Desktop Nav */}
-          <ul className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <a
-                  href={link.href}
-                  data-ocid="nav.link"
-                  className="px-3 py-1.5 rounded-lg font-mono text-xs font-medium transition-all"
-                  style={{
-                    color:
-                      activeSection === link.href.slice(1)
-                        ? accentPrimary
-                        : textBody,
-                    backgroundColor:
-                      activeSection === link.href.slice(1)
-                        ? dm
-                          ? "rgba(0,255,136,0.1)"
-                          : "oklch(0.52 0.24 262 / 0.1)"
-                        : "transparent",
-                    fontWeight:
-                      activeSection === link.href.slice(1) ? "600" : "500",
-                  }}
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-
-          <div className="flex items-center gap-2">
-            {/* Dark mode toggle */}
-            <motion.button
-              data-ocid="nav.toggle"
-              onClick={toggleDarkMode}
-              whileTap={{ scale: 0.9 }}
-              className="p-2 rounded-lg transition-colors relative overflow-hidden"
-              style={{
-                color: dm ? "#00ff88" : "#2563eb",
-                backgroundColor: dm
-                  ? "rgba(0,255,136,0.1)"
-                  : "oklch(0.52 0.24 262 / 0.08)",
-                border: dm
-                  ? "1px solid rgba(0,255,136,0.2)"
-                  : "1px solid oklch(0.52 0.24 262 / 0.15)",
-              }}
-              type="button"
-              aria-label="Toggle dark mode"
-            >
-              <motion.div
-                animate={{ rotate: darkModeRotating ? 360 : 0 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
+          {/* Desktop nav */}
+          <div
+            className="hidden md:flex"
+            style={{ gap: "1.5rem", alignItems: "center" }}
+          >
+            {navLinks.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                data-ocid={`nav.${l.label.toLowerCase()}.link`}
+                style={{
+                  color: mutedFg,
+                  textDecoration: "none",
+                  fontSize: "0.9rem",
+                  fontWeight: 500,
+                  transition: "color 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLAnchorElement).style.color = accent;
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLAnchorElement).style.color = mutedFg;
+                }}
               >
-                {dm ? (
-                  <Sun className="w-4 h-4" />
-                ) : (
-                  <Moon className="w-4 h-4" />
-                )}
-              </motion.div>
-            </motion.button>
-
-            {/* Mobile menu toggle */}
+                {l.label}
+              </a>
+            ))}
+            {/* Dark mode toggle */}
             <button
-              className="md:hidden p-2 rounded-lg transition-colors"
-              style={{
-                color: accentPrimary,
-                backgroundColor: dm
-                  ? "rgba(0,255,136,0.1)"
-                  : "oklch(0.52 0.24 262 / 0.08)",
-              }}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               type="button"
-              aria-label="Toggle menu"
-              data-ocid="nav.toggle"
+              data-ocid="nav.dark_mode.toggle"
+              onClick={() => setIsDark((d) => !d)}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                border: `2px solid ${isDark ? "#00e5a8" : accent}`,
+                background: isDark ? "#00e5a820" : "#eff6ff",
+                color: isDark ? "#00e5a8" : accent,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.3s",
+                fontSize: "1.1rem",
+              }}
+              title={isDark ? "Switch to light mode" : "Switch to dark mode"}
             >
-              {mobileMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
+              <span
+                style={{
+                  display: "inline-block",
+                  transition: "transform 0.4s",
+                  transform: isDark ? "rotate(360deg)" : "rotate(0deg)",
+                }}
+              >
+                {isDark ? <SunIcon /> : <MoonIcon />}
+              </span>
             </button>
           </div>
-        </nav>
 
-        {/* Mobile menu */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="md:hidden overflow-hidden"
+          {/* Mobile hamburger */}
+          <div
+            style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}
+            className="flex md:hidden"
+          >
+            <button
+              type="button"
+              data-ocid="nav.dark_mode.toggle"
+              onClick={() => setIsDark((d) => !d)}
               style={{
-                backgroundColor: dm ? "#0d1220" : "#eef1fb",
-                borderBottom: navBorder,
+                width: 36,
+                height: 36,
+                borderRadius: "50%",
+                border: `2px solid ${isDark ? "#00e5a8" : accent}`,
+                background: isDark ? "#00e5a820" : "#eff6ff",
+                color: isDark ? "#00e5a8" : accent,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <ul className="px-4 py-3 flex flex-col gap-1">
-                {navLinks.map((link) => (
-                  <li key={link.href}>
-                    <a
-                      href={link.href}
-                      className="block px-3 py-2 rounded-lg font-mono text-sm transition-all"
-                      style={{ color: textBody }}
-                      onClick={() => setMobileMenuOpen(false)}
-                      data-ocid="nav.link"
-                    >
-                      &gt; {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
-
-      {/* ─── Hero Section ────────────────────────────────────── */}
-      <section
-        id="home"
-        data-ocid="hero.section"
-        className="relative min-h-screen flex items-center justify-center pt-16 transition-colors duration-500"
-        style={{ backgroundColor: sectionBg }}
-      >
-        <HeroBg darkMode={dm} />
-        <div className="absolute inset-0 scanlines opacity-40 pointer-events-none" />
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20">
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
-            {/* Profile Image */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="flex-shrink-0 relative"
+              {isDark ? <SunIcon /> : <MoonIcon />}
+            </button>
+            <button
+              type="button"
+              data-ocid="nav.menu.toggle"
+              onClick={() => setMenuOpen((o) => !o)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: fg,
+                fontSize: "1.5rem",
+                padding: "4px",
+              }}
             >
-              {/* Outer decorative rings */}
-              <div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  margin: "-12px",
-                  border: dm
-                    ? "1.5px dashed rgba(0,255,136,0.3)"
-                    : "1.5px dashed oklch(0.52 0.24 262 / 0.3)",
-                  borderRadius: "50%",
-                  animation: "spin 20s linear infinite",
-                }}
-              />
-              <div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  margin: "-24px",
-                  border: dm
-                    ? "1.5px dashed rgba(34,211,238,0.2)"
-                    : "1.5px dashed oklch(0.55 0.22 293 / 0.2)",
-                  borderRadius: "50%",
-                  animation: "spin 30s linear infinite reverse",
-                }}
-              />
-              {/* Profile image */}
-              <div className="w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 rounded-full overflow-hidden profile-ring float-anim">
-                <img
-                  src="/assets/uploads/dhruv-Pic-1-1.jpg"
-                  alt="Dhruv Sharma"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              {/* Shield badge */}
-              <div
-                className="absolute -bottom-2 -right-2 w-12 h-12 rounded-full flex items-center justify-center"
-                style={{
-                  background: dm
-                    ? "linear-gradient(135deg, #00ff88, #22d3ee)"
-                    : "linear-gradient(135deg, #2563eb, #7c3aed)",
-                  boxShadow: dm
-                    ? "0 4px 12px rgba(0,255,136,0.4)"
-                    : "0 4px 12px rgba(37,99,235,0.4)",
-                }}
-              >
-                <Shield
-                  className="w-5 h-5"
-                  style={{ color: dm ? "#0a0f1a" : "#ffffff" }}
-                />
-              </div>
-            </motion.div>
-
-            {/* Text Content */}
-            <div className="flex-1 text-center lg:text-left">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                <TerminalTag text="whoami" darkMode={dm} />
-                <h1
-                  className="text-4xl sm:text-5xl lg:text-6xl font-bold mt-4 mb-3"
-                  style={{
-                    color: rootText,
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    lineHeight: 1.1,
-                  }}
-                >
-                  Dhruv{" "}
-                  <span
-                    className="glow-text-blue"
-                    style={{
-                      color: dm ? "#00ff88" : "#2563eb",
-                    }}
-                  >
-                    Sharma
-                  </span>
-                </h1>
-                <p
-                  className="font-mono text-sm sm:text-base mb-6"
-                  style={{ color: accentSecondary }}
-                >
-                  <span style={{ color: accentPrimary, fontWeight: 700 }}>
-                    $
-                  </span>{" "}
-                  Cybersecurity Enthusiast{" "}
-                  <span style={{ color: dm ? "#334155" : "#cbd5e1" }}>|</span>{" "}
-                  B.Tech CSE (AI){" "}
-                  <span style={{ color: dm ? "#334155" : "#cbd5e1" }}>|</span>{" "}
-                  Honours in Cybersecurity
-                </p>
-                <p
-                  className="text-base mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0"
-                  style={{ color: textBody }}
-                >
-                  Motivated CS student skilled in penetration testing,
-                  vulnerability assessment, and cybersecurity tools. Experienced
-                  with Kali Linux, Nmap, Metasploit, and Wireshark.
-                </p>
-
-                {/* CTA Buttons */}
-                <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
-                  <Button
-                    data-ocid="hero.primary_button"
-                    onClick={() =>
-                      document
-                        .getElementById("projects")
-                        ?.scrollIntoView({ behavior: "smooth" })
-                    }
-                    className="font-mono gap-2 transition-all"
-                    style={{
-                      background: dm
-                        ? "linear-gradient(135deg, #00ff88, #22d3ee)"
-                        : "linear-gradient(135deg, #2563eb, #7c3aed)",
-                      color: dm ? "#0a0f1a" : "#ffffff",
-                      border: "none",
-                      boxShadow: dm
-                        ? "0 4px 16px rgba(0,255,136,0.35)"
-                        : "0 4px 16px rgba(37,99,235,0.35)",
-                    }}
-                  >
-                    <Terminal className="w-4 h-4" />
-                    View Projects
-                  </Button>
-                  <Button
-                    data-ocid="hero.secondary_button"
-                    variant="outline"
-                    className="font-mono gap-2 transition-all"
-                    style={{
-                      border: `1.5px solid ${accentPrimary}`,
-                      color: accentPrimary,
-                      backgroundColor: "transparent",
-                    }}
-                    onClick={() => {}}
-                  >
-                    <Download className="w-4 h-4" />
-                    Download Resume
-                  </Button>
-                  <Button
-                    data-ocid="hero.link"
-                    variant="ghost"
-                    className="font-mono gap-2 transition-all"
-                    style={{ color: textMuted }}
-                    onClick={() =>
-                      document
-                        .getElementById("contact")
-                        ?.scrollIntoView({ behavior: "smooth" })
-                    }
-                  >
-                    <Mail className="w-4 h-4" />
-                    Contact Me
-                  </Button>
-                </div>
-              </motion.div>
-
-              {/* Quick stats */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                className="flex gap-8 mt-10 justify-center lg:justify-start"
-              >
-                {[
-                  { label: "Projects", value: "3+" },
-                  { label: "Certifications", value: "5" },
-                  { label: "CGPA", value: "8+" },
-                ].map((stat) => (
-                  <div key={stat.label} className="text-center">
-                    <div
-                      className="text-3xl font-bold"
-                      style={{
-                        color: dm ? "#00ff88" : "#2563eb",
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
-                      }}
-                    >
-                      {stat.value}
-                    </div>
-                    <div
-                      className="font-mono text-xs mt-1"
-                      style={{ color: textMuted }}
-                    >
-                      {stat.label}
-                    </div>
-                  </div>
-                ))}
-              </motion.div>
-            </div>
+              {menuOpen ? "✕" : "☰"}
+            </button>
           </div>
         </div>
 
-        {/* Scroll hint */}
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          style={{ color: textMuted }}
-        >
-          <ChevronDown className="w-5 h-5" />
-        </motion.div>
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div
+            style={{
+              background: navBg,
+              borderTop: `1px solid ${cardBorder}`,
+              padding: "1rem 1.5rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.75rem",
+            }}
+          >
+            {navLinks.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                data-ocid={`nav.mobile.${l.label.toLowerCase()}.link`}
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  color: fg,
+                  textDecoration: "none",
+                  fontSize: "1rem",
+                  fontWeight: 500,
+                }}
+              >
+                {l.label}
+              </a>
+            ))}
+          </div>
+        )}
+      </nav>
 
-        <style>{`
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
+      {/* ── Hero ── */}
+      <section
+        id="about"
+        style={{
+          paddingTop: 100,
+          paddingBottom: 80,
+          maxWidth: 1100,
+          margin: "0 auto",
+          padding: "100px 1.5rem 80px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
+        }}
+      >
+        {/* Profile photo */}
+        <div
+          style={{
+            width: 160,
+            height: 160,
+            borderRadius: "50%",
+            overflow: "hidden",
+            border: `4px solid ${accent}`,
+            boxShadow: isDark
+              ? `0 0 0 4px #020617, 0 0 30px ${accent}55`
+              : `0 0 0 4px #eef1fb, 0 8px 30px ${accent}33`,
+            marginBottom: "2rem",
+            flexShrink: 0,
+          }}
+          className={isDark ? "profile-photo" : ""}
+        >
+          <img
+            src="https://i.postimg.cc/7ZQFkKZW/1.jpg"
+            alt="Dhruv Sharma"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </div>
+
+        {/* Name */}
+        <h1
+          style={{
+            fontSize: "clamp(2.5rem, 7vw, 4rem)",
+            fontWeight: 800,
+            lineHeight: 1.1,
+            marginBottom: "0.5rem",
+            letterSpacing: "-0.03em",
+            color: fg,
+          }}
+        >
+          Dhruv <span style={{ color: accent }}>Sharma</span>
+        </h1>
+
+        {/* Title */}
+        <p
+          style={{
+            fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
+            fontWeight: 500,
+            color: isDark ? "#00e5a8" : accentViolet,
+            marginBottom: "1rem",
+            fontFamily: "'JetBrains Mono', monospace",
+          }}
+        >
+          {isDark && <span style={{ color: "#00e5a8" }}>&gt; </span>}
+          Cybersecurity Student &amp; Developer
+        </p>
+
+        {/* Bio */}
+        <p
+          style={{
+            maxWidth: 600,
+            color: mutedFg,
+            fontSize: "1rem",
+            lineHeight: 1.7,
+            marginBottom: "2rem",
+          }}
+        >
+          B.Tech CSE AI student with a specialization in Cybersecurity at GL
+          Bajaj Group of Institutions. Passionate about penetration testing, web
+          security, machine learning, and building real-world tools.
+        </p>
+
+        {/* Stats */}
+        <div
+          style={{
+            display: "flex",
+            gap: "2rem",
+            marginBottom: "2.5rem",
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          {[
+            { label: "Projects", value: "3+" },
+            { label: "Certifications", value: "5" },
+            { label: "CGPA", value: "8+" },
+          ].map((s) => (
+            <div key={s.label} style={{ textAlign: "center" }}>
+              <div
+                style={{
+                  fontSize: "2rem",
+                  fontWeight: 800,
+                  color: accent,
+                  lineHeight: 1,
+                  textShadow: isDark ? `0 0 12px ${accent}88` : "none",
+                }}
+              >
+                {s.value}
+              </div>
+              <div style={{ fontSize: "0.8rem", color: mutedFg, marginTop: 4 }}>
+                {s.label}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Buttons */}
+        <div
+          style={{
+            display: "flex",
+            gap: "0.75rem",
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <a
+            href="#projects"
+            data-ocid="hero.view_projects.button"
+            style={{
+              background: accent,
+              color: isDark ? "#020617" : "#fff",
+              padding: "0.65rem 1.5rem",
+              borderRadius: 8,
+              textDecoration: "none",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              transition: "all 0.25s",
+              boxShadow: isDark
+                ? `0 0 12px ${accent}55, 0 0 24px ${accent}22`
+                : "none",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.opacity = "0.9";
+              (e.currentTarget as HTMLAnchorElement).style.transform =
+                "translateY(-3px)";
+              if (isDark)
+                (e.currentTarget as HTMLAnchorElement).style.boxShadow =
+                  `0 0 22px ${accent}99, 0 0 44px ${accent}44`;
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.opacity = "1";
+              (e.currentTarget as HTMLAnchorElement).style.transform =
+                "translateY(0)";
+              if (isDark)
+                (e.currentTarget as HTMLAnchorElement).style.boxShadow =
+                  `0 0 12px ${accent}55, 0 0 24px ${accent}22`;
+            }}
+          >
+            View Projects
+          </a>
+          <a
+            href="https://drive.google.com/file/d/1jnmXAN54fRsAsqncSWwg1_90ARLEGKTu/view?usp=sharing"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-ocid="hero.download_resume.button"
+            style={{
+              background: "transparent",
+              color: accent,
+              padding: "0.65rem 1.5rem",
+              borderRadius: 8,
+              textDecoration: "none",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              border: `2px solid ${accent}`,
+              transition: "all 0.2s",
+              display: "inline-block",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.background = accent;
+              (e.currentTarget as HTMLAnchorElement).style.color = "#fff";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.background =
+                "transparent";
+              (e.currentTarget as HTMLAnchorElement).style.color = accent;
+            }}
+          >
+            Download Resume
+          </a>
+          <a
+            href="#contact"
+            data-ocid="hero.contact.button"
+            style={{
+              background: accentViolet,
+              color: "#fff",
+              padding: "0.65rem 1.5rem",
+              borderRadius: 8,
+              textDecoration: "none",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              transition: "opacity 0.2s, transform 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.opacity = "0.85";
+              (e.currentTarget as HTMLAnchorElement).style.transform =
+                "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.opacity = "1";
+              (e.currentTarget as HTMLAnchorElement).style.transform =
+                "translateY(0)";
+            }}
+          >
+            Contact Me
+          </a>
+          <a
+            href="https://www.instagram.com/dhruv_s_0506"
+            target="_blank"
+            rel="noreferrer"
+            data-ocid="hero.instagram.button"
+            style={{
+              background:
+                "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)",
+              color: "#fff",
+              padding: "0.65rem 1.5rem",
+              borderRadius: 8,
+              textDecoration: "none",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              transition: "opacity 0.2s, transform 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.opacity = "0.85";
+              (e.currentTarget as HTMLAnchorElement).style.transform =
+                "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.opacity = "1";
+              (e.currentTarget as HTMLAnchorElement).style.transform =
+                "translateY(0)";
+            }}
+          >
+            Instagram
+          </a>
+        </div>
       </section>
 
-      {/* ─── Skills Section ──────────────────────────────────── */}
+      {/* ── Professional Summary ── */}
+      <section
+        style={{
+          background: isDark ? "#0f172a" : "#fff",
+          borderTop: `1px solid ${cardBorder}`,
+          borderBottom: `1px solid ${cardBorder}`,
+          padding: "4rem 1.5rem",
+        }}
+      >
+        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
+          <h2
+            style={{
+              fontSize: "clamp(1.5rem, 3vw, 2rem)",
+              fontWeight: 700,
+              color: fg,
+              marginBottom: "1rem",
+            }}
+          >
+            Professional Summary
+          </h2>
+          <div
+            style={{
+              width: 50,
+              height: 3,
+              background: `linear-gradient(90deg, ${accent}, ${accentViolet})`,
+              margin: "0 auto 1.5rem",
+              borderRadius: 4,
+            }}
+          />
+          <p style={{ color: mutedFg, lineHeight: 1.85, fontSize: "1.05rem" }}>
+            Cybersecurity-focused B.Tech student with hands-on experience in
+            penetration testing, vulnerability assessment, web security, and
+            machine learning. Actively building real-world tools, practicing on
+            platforms like TryHackMe, Hack The Box, and PortSwigger, and leading
+            teams in hackathons. Passionate about bridging the gap between
+            offensive security and modern software development.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Skills ── */}
       <section
         id="skills"
-        data-ocid="skills.section"
-        className="py-24 relative transition-colors duration-500"
-        style={{ backgroundColor: sectionBgAlt }}
+        style={{ padding: "5rem 1.5rem", maxWidth: 1100, margin: "0 auto" }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <SectionHeader
-            tag="ls ./skills"
-            title="Technical Skills"
-            subtitle="A comprehensive toolkit for cybersecurity research and full-stack development."
-            darkMode={dm}
-          />
+        {sectionTitle("Technical Skills")}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+            gap: "1.25rem",
+          }}
+        >
+          {SKILL_CATEGORIES.map((cat) => (
+            <div
+              key={cat.name}
+              style={{
+                background: isDark ? "#0f172a" : cardBg,
+                border: `1px solid ${isDark ? "#00e5a820" : cat.borderColor}`,
+                borderRadius: 12,
+                padding: "1.25rem",
+                transition: "transform 0.2s, box-shadow 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLDivElement).style.transform =
+                  "translateY(-4px)";
+                (e.currentTarget as HTMLDivElement).style.boxShadow =
+                  `0 8px 24px ${isDark ? "#00e5a820" : `${cat.color}22`}`;
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLDivElement).style.transform =
+                  "translateY(0)";
+                (e.currentTarget as HTMLDivElement).style.boxShadow = "none";
+              }}
+            >
+              <h3
+                style={{
+                  fontWeight: 700,
+                  color: isDark ? "#00e5a8" : cat.color,
+                  marginBottom: "0.85rem",
+                  letterSpacing: "0.02em",
+                  textTransform: "uppercase" as const,
+                  fontSize: "0.8rem",
+                }}
+              >
+                {cat.name}
+              </h3>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
+                {cat.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    style={{
+                      background: isDark ? badgeBg : cat.bgColor,
+                      color: isDark ? badgeFg : cat.color,
+                      border: `1px solid ${isDark ? "#00e5a833" : cat.borderColor}`,
+                      borderRadius: 20,
+                      padding: "0.25rem 0.7rem",
+                      fontSize: "0.78rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {skillCategories.map((cat, idx) => {
-              const accent = dm ? cat.darkAccent : cat.accent;
-              return (
-                <motion.div
-                  key={cat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: idx * 0.07 }}
-                  whileHover={{
-                    y: -4,
-                    boxShadow: dm
-                      ? "0 12px 32px rgba(0,255,136,0.12)"
-                      : "0 12px 32px rgba(37,99,235,0.12)",
-                  }}
-                  className="rounded-xl p-5 cursor-default transition-colors"
+      {/* ── Projects ── */}
+      <section
+        id="projects"
+        style={{
+          background: isDark ? "#0b1120" : "#f4f7ff",
+          padding: "5rem 1.5rem",
+        }}
+      >
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          {sectionTitle("Projects")}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+              gap: "1.5rem",
+            }}
+          >
+            {PROJECTS.map((p, i) => (
+              <div
+                key={p.title}
+                data-ocid={`projects.item.${i + 1}`}
+                style={{
+                  background: isDark ? "rgba(15,23,42,0.85)" : cardBg,
+                  backdropFilter: isDark ? "blur(12px)" : "none",
+                  WebkitBackdropFilter: isDark ? "blur(12px)" : "none",
+                  border: isDark
+                    ? "1px solid rgba(0,229,168,0.15)"
+                    : `1px solid ${cardBorder}`,
+                  borderRadius: 14,
+                  overflow: "hidden",
+                  transition:
+                    "transform 0.25s, box-shadow 0.25s, border-color 0.25s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLDivElement).style.transform =
+                    "translateY(-6px)";
+                  (e.currentTarget as HTMLDivElement).style.boxShadow = isDark
+                    ? "0 12px 40px rgba(0,0,0,0.5), 0 0 20px rgba(0,229,168,0.15)"
+                    : `0 12px 32px ${p.color}22`;
+                  if (isDark)
+                    (e.currentTarget as HTMLDivElement).style.borderColor =
+                      "rgba(0,229,168,0.4)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLDivElement).style.transform =
+                    "translateY(0)";
+                  (e.currentTarget as HTMLDivElement).style.boxShadow = "none";
+                  if (isDark)
+                    (e.currentTarget as HTMLDivElement).style.borderColor =
+                      "rgba(0,229,168,0.15)";
+                }}
+              >
+                {/* Color bar */}
+                <div
                   style={{
-                    background: dm ? "#0d1a2e" : "#f4f7ff",
-                    border: dm
-                      ? "1px solid rgba(0,255,136,0.1)"
-                      : "1px solid #e2e8f0",
-                    boxShadow: dm
-                      ? "0 2px 8px rgba(0,0,0,0.3)"
-                      : "0 2px 8px rgba(37,99,235,0.05)",
+                    height: 5,
+                    background: isDark
+                      ? "linear-gradient(90deg, #00e5a8, #3b82f6)"
+                      : `linear-gradient(90deg, ${p.color}, ${p.color}99)`,
                   }}
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center"
-                      style={{
-                        backgroundColor: `${accent}20`,
-                        color: accent,
-                      }}
-                    >
-                      {cat.icon}
-                    </div>
-                    <h3
-                      className="font-mono text-xs font-semibold"
-                      style={{ color: accent }}
-                    >
-                      {cat.label}
-                    </h3>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {cat.skills.map((skill) => (
+                />
+                <div style={{ padding: "1.5rem" }}>
+                  <h3
+                    style={{
+                      fontWeight: 700,
+                      fontSize: "1.15rem",
+                      color: isDark ? "#00e5a8" : p.color,
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    {p.title}
+                  </h3>
+                  <p
+                    style={{
+                      color: mutedFg,
+                      fontSize: "0.9rem",
+                      lineHeight: 1.6,
+                      marginBottom: "1rem",
+                    }}
+                  >
+                    {p.description}
+                  </p>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "0.35rem",
+                      marginBottom: "1.25rem",
+                    }}
+                  >
+                    {p.tags.map((t) => (
                       <span
-                        key={skill}
-                        className="font-mono text-xs px-2 py-1 rounded-md"
+                        key={t}
                         style={{
-                          background: dm ? "rgba(255,255,255,0.05)" : "#f1f5f9",
-                          color: dm ? "#94a3b8" : "#475569",
-                          border: dm
-                            ? "1px solid rgba(255,255,255,0.08)"
-                            : "1px solid #e2e8f0",
+                          background: isDark
+                            ? "rgba(0,229,168,0.06)"
+                            : "#f1f5f9",
+                          color: isDark ? "#00e5a8" : "#475569",
+                          border: isDark
+                            ? "1px solid rgba(0,229,168,0.25)"
+                            : "none",
+                          borderRadius: isDark ? 9999 : 6,
+                          padding: "0.2rem 0.6rem",
+                          fontSize: "0.75rem",
+                          fontFamily: "'JetBrains Mono', monospace",
                         }}
                       >
-                        {skill}
+                        {t}
                       </span>
                     ))}
                   </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Projects Section ────────────────────────────────── */}
-      <section
-        id="projects"
-        data-ocid="projects.section"
-        className="py-24 relative transition-colors duration-500"
-        style={{ backgroundColor: sectionBg }}
-      >
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: dm
-              ? "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(34,211,238,0.04) 0%, transparent 70%)"
-              : "radial-gradient(ellipse 80% 50% at 50% 50%, oklch(0.55 0.22 293 / 0.05) 0%, transparent 70%)",
-          }}
-        />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
-          <SectionHeader
-            tag="cat ./projects/*"
-            title="Projects"
-            subtitle="Security tools and full-stack applications built with modern technologies."
-            darkMode={dm}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project, idx) => (
-              <motion.div
-                key={project.id}
-                data-ocid={project.ocid}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
-                whileHover={{
-                  y: -6,
-                  boxShadow: dm
-                    ? "0 20px 40px rgba(0,255,136,0.15)"
-                    : "0 20px 40px rgba(37,99,235,0.2)",
-                }}
-                className="rounded-xl p-6 flex flex-col cursor-default transition-colors"
-                style={{
-                  background: cardBg,
-                  border: cardBorder,
-                  boxShadow: dm
-                    ? "0 2px 12px rgba(0,0,0,0.3)"
-                    : "0 2px 12px rgba(37,99,235,0.06)",
-                }}
-              >
-                {/* Project icon */}
-                <div className="flex items-start justify-between mb-4">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center"
-                    style={{
-                      background: dm
-                        ? "linear-gradient(135deg, rgba(0,255,136,0.12), rgba(34,211,238,0.12))"
-                        : "linear-gradient(135deg, oklch(0.52 0.24 262 / 0.12), oklch(0.55 0.22 293 / 0.12))",
-                      border: dm
-                        ? "1px solid rgba(0,255,136,0.2)"
-                        : "1px solid oklch(0.52 0.24 262 / 0.2)",
-                      color: accentPrimary,
-                    }}
-                  >
-                    {project.icon}
-                  </div>
-                  <Badge
-                    className="font-mono text-xs"
-                    style={{
-                      backgroundColor: dm
-                        ? "rgba(34,211,238,0.1)"
-                        : "oklch(0.55 0.22 293 / 0.1)",
-                      color: accentSecondary,
-                      border: dm
-                        ? "1px solid rgba(34,211,238,0.2)"
-                        : "1px solid oklch(0.55 0.22 293 / 0.2)",
-                    }}
-                  >
-                    {project.subtitle}
-                  </Badge>
+                  {(p.github || p.live) && (
+                    <div style={{ display: "flex", gap: "0.75rem" }}>
+                      {p.github && (
+                        <a
+                          href={p.github}
+                          target="_blank"
+                          rel="noreferrer"
+                          data-ocid={`projects.github.button.${i + 1}`}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.4rem",
+                            color: isDark ? "#00e5a8" : "#475569",
+                            textDecoration: "none",
+                            fontSize: "0.85rem",
+                            fontWeight: 500,
+                            transition: "color 0.2s",
+                          }}
+                          onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLAnchorElement).style.color =
+                              accent;
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLAnchorElement).style.color =
+                              isDark ? "#00e5a8" : "#475569";
+                          }}
+                        >
+                          <GithubIcon /> GitHub
+                        </a>
+                      )}
+                      {p.live && (
+                        <a
+                          href={p.live}
+                          target="_blank"
+                          rel="noreferrer"
+                          data-ocid={`projects.live.button.${i + 1}`}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.4rem",
+                            color: "#fff",
+                            background: isDark ? "#00e5a8" : p.color,
+                            textDecoration: "none",
+                            fontSize: "0.85rem",
+                            fontWeight: 600,
+                            padding: "0.35rem 0.85rem",
+                            borderRadius: 6,
+                            transition: "opacity 0.2s",
+                          }}
+                          onMouseEnter={(e) => {
+                            (
+                              e.currentTarget as HTMLAnchorElement
+                            ).style.opacity = "0.85";
+                          }}
+                          onMouseLeave={(e) => {
+                            (
+                              e.currentTarget as HTMLAnchorElement
+                            ).style.opacity = "1";
+                          }}
+                        >
+                          ↗ Live Demo
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
-
-                <h3
-                  className="text-xl font-bold mb-2"
-                  style={{ color: dm ? "#e2e8f0" : "#1e293b" }}
-                >
-                  {project.title}
-                </h3>
-                <p
-                  className="text-sm leading-relaxed mb-4 flex-1"
-                  style={{ color: textBody }}
-                >
-                  {project.description}
-                </p>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2">
-                  {project.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="font-mono text-xs px-2 py-1 rounded-md"
-                      style={{
-                        background: dm ? "rgba(255,255,255,0.05)" : "#f1f5f9",
-                        color: dm ? "#94a3b8" : "#475569",
-                        border: dm
-                          ? "1px solid rgba(255,255,255,0.08)"
-                          : "1px solid #e2e8f0",
-                      }}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── Certifications Section ──────────────────────────── */}
+      {/* ── Certifications ── */}
       <section
         id="certifications"
-        data-ocid="certs.section"
-        className="py-24 relative transition-colors duration-500"
-        style={{ backgroundColor: sectionBgAlt }}
+        style={{ padding: "5rem 1.5rem", maxWidth: 1100, margin: "0 auto" }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <SectionHeader
-            tag="ls ./certifications"
-            title="Certifications"
-            subtitle="Industry-recognized credentials validating expertise in cybersecurity and cloud technologies."
-            darkMode={dm}
-          />
-
-          <CertSlideshow darkMode={dm} onViewDetails={setSelectedCert} />
-        </div>
-      </section>
-
-      {/* ─── Certificate Dialog ───────────────────────────────── */}
-      <Dialog
-        open={selectedCert !== null}
-        onOpenChange={(open) => {
-          if (!open) setSelectedCert(null);
-        }}
-      >
-        <DialogContent
-          className="max-w-3xl w-full p-0 overflow-hidden"
-          style={{
-            backgroundColor: dm ? "#0d1220" : "#eef1fb",
-            border: dm ? "1px solid rgba(0,255,136,0.2)" : "1px solid #e2e8f0",
-            boxShadow: dm
-              ? "0 20px 60px rgba(0,255,136,0.1)"
-              : "0 20px 60px rgba(37,99,235,0.15)",
-          }}
+        {sectionTitle("Certifications")}
+        <div
+          style={{ position: "relative", maxWidth: 800, margin: "0 auto" }}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
         >
-          {selectedCert && (
-            <>
-              <DialogHeader
-                className="px-6 pt-6 pb-4"
-                style={{
-                  borderBottom: dm
-                    ? "1px solid rgba(255,255,255,0.06)"
-                    : "1px solid #f1f5f9",
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-9 h-9 rounded-lg flex items-center justify-center"
-                      style={{
-                        background: dm
-                          ? "linear-gradient(135deg, #00ff88, #22d3ee)"
-                          : "linear-gradient(135deg, #2563eb, #7c3aed)",
-                        color: dm ? "#0a0f1a" : "#ffffff",
-                      }}
-                    >
-                      <Award className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <DialogTitle
-                        className="font-mono text-base"
-                        style={{ color: dm ? "#e2e8f0" : "#1e293b" }}
-                      >
-                        {selectedCert.title}
-                      </DialogTitle>
-                      <p
-                        className="font-mono text-xs mt-0.5"
-                        style={{ color: accentPrimary }}
-                      >
-                        {selectedCert.issuer}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    data-ocid="certs.close_button"
-                    className="p-1.5 rounded-lg transition-colors"
-                    style={{ color: dm ? "#64748b" : "#94a3b8" }}
-                    onClick={() => setSelectedCert(null)}
-                    type="button"
-                    aria-label="Close"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </DialogHeader>
-
-              {/* Certificate image */}
-              <div className="p-4">
+          {/* Slide */}
+          <div
+            style={{
+              background: isDark ? "#0f172a" : cardBg,
+              border: `1px solid ${cardBorder}`,
+              borderRadius: 16,
+              overflow: "hidden",
+              boxShadow: isDark ? "0 0 30px #00e5a811" : "0 8px 32px #2563eb11",
+            }}
+          >
+            <div
+              style={{
+                aspectRatio: "16/9",
+                position: "relative",
+                background: isDark ? "#000" : "#f8fafc",
+                overflow: "hidden",
+              }}
+            >
+              {CERTIFICATES.map((cert, i) => (
                 <div
-                  className="rounded-xl overflow-hidden"
+                  key={cert.title}
                   style={{
-                    border: dm
-                      ? "1px solid rgba(0,255,136,0.15)"
-                      : "1px solid #e2e8f0",
+                    position: "absolute",
+                    inset: 0,
+                    opacity: i === slideIndex ? 1 : 0,
+                    transition: "opacity 0.5s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
                   <img
-                    src={selectedCert.image}
-                    alt={`${selectedCert.title} - ${selectedCert.issuer}`}
-                    className="w-full h-auto block"
+                    src={cert.image}
+                    alt={cert.title}
                     style={{
-                      maxHeight: "500px",
+                      width: "100%",
+                      height: "100%",
                       objectFit: "contain",
-                      backgroundColor: dm ? "#070f1c" : "#f8fafc",
                     }}
                   />
                 </div>
-                <div className="mt-4 flex items-center gap-2">
-                  <Lock className="w-3.5 h-3.5" style={{ color: "#16a34a" }} />
-                  <span
-                    className="font-mono text-xs"
-                    style={{ color: textMuted }}
-                  >
-                    Verified credential — {selectedCert.issuer}
-                  </span>
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* ─── Education Section ───────────────────────────────── */}
-      <section
-        id="education"
-        data-ocid="education.section"
-        className="py-24 relative transition-colors duration-500"
-        style={{ backgroundColor: sectionBg }}
-      >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
-          <SectionHeader
-            tag="cat ./education.json"
-            title="Education"
-            darkMode={dm}
-          />
-
-          <div className="relative">
-            {/* Timeline line */}
-            <div
-              className="absolute top-0 bottom-0 w-0.5"
-              style={{
-                left: "1.5rem",
-                background: dm
-                  ? "linear-gradient(to bottom, #00ff88, #22d3ee, transparent)"
-                  : "linear-gradient(to bottom, #2563eb, #7c3aed, transparent)",
-              }}
-            />
-
-            <div className="space-y-6">
-              {/* GL Bajaj */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
-                className="pl-14 relative"
-              >
-                <div
-                  className="absolute top-6 w-5 h-5 rounded-full -translate-x-1/2 flex items-center justify-center"
-                  style={{
-                    left: "1.5rem",
-                    background: dm
-                      ? "linear-gradient(135deg, #00ff88, #22d3ee)"
-                      : "linear-gradient(135deg, #2563eb, #7c3aed)",
-                    boxShadow: dm
-                      ? "0 0 12px rgba(0,255,136,0.5)"
-                      : "0 0 12px rgba(37,99,235,0.5)",
-                  }}
-                >
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: dm ? "#0a0f1a" : "#ffffff" }}
-                  />
-                </div>
-                <motion.div
-                  whileHover={{
-                    y: -3,
-                    boxShadow: dm
-                      ? "0 12px 32px rgba(0,255,136,0.1)"
-                      : "0 12px 32px rgba(37,99,235,0.1)",
-                  }}
-                  className="rounded-xl p-6 transition-colors"
-                  style={{ background: cardBg, border: cardBorder }}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
-                    <div>
-                      <h3
-                        className="font-bold text-base"
-                        style={{ color: dm ? "#e2e8f0" : "#1e293b" }}
-                      >
-                        GL Bajaj Group of Institutions
-                      </h3>
-                      <p
-                        className="font-mono text-sm mt-1"
-                        style={{ color: accentPrimary }}
-                      >
-                        B.Tech CSE (Artificial Intelligence)
-                      </p>
-                      <p
-                        className="font-mono text-xs mt-0.5"
-                        style={{ color: accentSecondary }}
-                      >
-                        Honours in Cybersecurity
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <Badge
-                        className="font-mono text-xs"
-                        style={{
-                          backgroundColor: dm
-                            ? "rgba(0,255,136,0.1)"
-                            : "oklch(0.52 0.24 262 / 0.1)",
-                          color: accentPrimary,
-                          border: dm
-                            ? "1px solid rgba(0,255,136,0.25)"
-                            : "1px solid oklch(0.52 0.24 262 / 0.25)",
-                        }}
-                      >
-                        2023 – 2027
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5" style={{ color: "#16a34a" }} />
-                    <span className="text-sm" style={{ color: textBody }}>
-                      CGPA:{" "}
-                      <span
-                        className="font-semibold"
-                        style={{ color: dm ? "#e2e8f0" : "#1e293b" }}
-                      >
-                        8+ / 10
-                      </span>
-                    </span>
-                  </div>
-                </motion.div>
-              </motion.div>
-
-              {/* Aviraj World School */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="pl-14 relative"
-              >
-                <div
-                  className="absolute top-6 w-5 h-5 rounded-full -translate-x-1/2 flex items-center justify-center"
-                  style={{
-                    left: "1.5rem",
-                    background: dm
-                      ? "linear-gradient(135deg, #00ff88, #22d3ee)"
-                      : "linear-gradient(135deg, #2563eb, #7c3aed)",
-                    boxShadow: dm
-                      ? "0 0 12px rgba(0,255,136,0.4)"
-                      : "0 0 12px rgba(37,99,235,0.4)",
-                  }}
-                >
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: dm ? "#0a0f1a" : "#ffffff" }}
-                  />
-                </div>
-                <motion.div
-                  whileHover={{ y: -3 }}
-                  className="rounded-xl p-6 transition-colors"
-                  style={{ background: cardBg, border: cardBorder }}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <h3
-                        className="font-bold text-base"
-                        style={{ color: dm ? "#e2e8f0" : "#1e293b" }}
-                      >
-                        Aviraj World School (CBSE)
-                      </h3>
-                      <p
-                        className="font-mono text-sm mt-1"
-                        style={{ color: accentPrimary }}
-                      >
-                        Class XII
-                      </p>
-                    </div>
-                    <Badge
-                      className="font-mono text-xs"
-                      style={{
-                        backgroundColor: "#16a34a15",
-                        color: "#16a34a",
-                        border: "1px solid #16a34a30",
-                      }}
-                    >
-                      91%
-                    </Badge>
-                  </div>
-                </motion.div>
-              </motion.div>
-
-              {/* RDS */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="pl-14 relative"
-              >
-                <div
-                  className="absolute top-6 w-5 h-5 rounded-full -translate-x-1/2 flex items-center justify-center"
-                  style={{
-                    left: "1.5rem",
-                    background: dm
-                      ? "linear-gradient(135deg, #00ff88, #22d3ee)"
-                      : "linear-gradient(135deg, #2563eb, #7c3aed)",
-                    boxShadow: dm
-                      ? "0 0 12px rgba(0,255,136,0.3)"
-                      : "0 0 12px rgba(37,99,235,0.3)",
-                  }}
-                >
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: dm ? "#0a0f1a" : "#ffffff" }}
-                  />
-                </div>
-                <motion.div
-                  whileHover={{ y: -3 }}
-                  className="rounded-xl p-6 transition-colors"
-                  style={{ background: cardBg, border: cardBorder }}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <h3
-                        className="font-bold text-base"
-                        style={{ color: dm ? "#e2e8f0" : "#1e293b" }}
-                      >
-                        RDS Public School (CBSE)
-                      </h3>
-                      <p
-                        className="font-mono text-sm mt-1"
-                        style={{ color: accentPrimary }}
-                      >
-                        Class X
-                      </p>
-                    </div>
-                    <Badge
-                      className="font-mono text-xs"
-                      style={{
-                        backgroundColor: "#16a34a15",
-                        color: "#16a34a",
-                        border: "1px solid #16a34a30",
-                      }}
-                    >
-                      90%
-                    </Badge>
-                  </div>
-                </motion.div>
-              </motion.div>
+              ))}
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ─── Achievements Section ────────────────────────────── */}
-      <section
-        id="achievements"
-        data-ocid="achievements.section"
-        className="py-24 relative transition-colors duration-500"
-        style={{ backgroundColor: sectionBgAlt }}
-      >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <SectionHeader
-            tag="cat ./achievements.log"
-            title="Achievements & Activities"
-            darkMode={dm}
-          />
-
-          <div className="space-y-3">
-            {[
-              {
-                text: "Team Lead – Smart India Hackathon 2025 (Cleared Internal Round)",
-                icon: <Trophy className="w-4 h-4" />,
-                color: dm ? "#22d3ee" : "#2563eb",
-                bg: dm ? "rgba(34,211,238,0.1)" : "#2563eb15",
-              },
-              {
-                text: "Practicing cybersecurity labs on TryHackMe and Hack The Box",
-                icon: <Terminal className="w-4 h-4" />,
-                color: dm ? "#00ff88" : "#7c3aed",
-                bg: dm ? "rgba(0,255,136,0.1)" : "#7c3aed15",
-              },
-              {
-                text: "Member – National Service Scheme (NSS)",
-                icon: <GraduationCap className="w-4 h-4" />,
-                color: dm ? "#22d3ee" : "#0891b2",
-                bg: dm ? "rgba(34,211,238,0.1)" : "#0891b215",
-              },
-              {
-                text: "Design Team – Rotaract Club",
-                icon: <Zap className="w-4 h-4" />,
-                color: dm ? "#00ff88" : "#d97706",
-                bg: dm ? "rgba(0,255,136,0.08)" : "#d9770615",
-              },
-              {
-                text: "Event Management Team – Shrinik Club",
-                icon: <Award className="w-4 h-4" />,
-                color: dm ? "#22d3ee" : "#16a34a",
-                bg: dm ? "rgba(34,211,238,0.08)" : "#16a34a15",
-              },
-            ].map((item, idx) => (
-              <motion.div
-                key={item.text}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: idx * 0.08 }}
-                whileHover={{ x: 4 }}
-                className="rounded-xl p-5 flex items-center gap-4 transition-colors"
+            {/* Info bar */}
+            <div
+              style={{
+                padding: "1rem 1.5rem",
+                borderTop: `1px solid ${cardBorder}`,
+                textAlign: "center",
+              }}
+            >
+              <div
                 style={{
-                  background: dm ? "#0d1a2e" : "#f4f7ff",
-                  border: dm
-                    ? "1px solid rgba(255,255,255,0.06)"
-                    : "1px solid #e2e8f0",
+                  fontWeight: 700,
+                  color: isDark ? "#00e5a8" : accent,
+                  fontSize: "1rem",
+                  marginBottom: "0.25rem",
                 }}
               >
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{
-                    backgroundColor: item.bg,
-                    color: item.color,
-                    border: `1px solid ${item.color}30`,
-                  }}
-                >
-                  {item.icon}
-                </div>
-                <p
-                  className="text-sm font-medium"
-                  style={{ color: dm ? "#94a3b8" : "#475569" }}
-                >
-                  {item.text}
-                </p>
-              </motion.div>
+                {CERTIFICATES[slideIndex].title}
+              </div>
+              <div style={{ color: mutedFg, fontSize: "0.85rem" }}>
+                {CERTIFICATES[slideIndex].issuer}
+              </div>
+            </div>
+          </div>
+
+          {/* Arrow controls */}
+          <button
+            type="button"
+            data-ocid="certifications.pagination_prev"
+            onClick={() => {
+              prevSlide();
+              setIsPaused(true);
+            }}
+            style={{
+              position: "absolute",
+              left: -20,
+              top: "40%",
+              transform: "translateY(-50%)",
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              border: `2px solid ${isDark ? "#00e5a8" : accent}`,
+              background: isDark ? "#0f172a" : "#fff",
+              color: isDark ? "#00e5a8" : accent,
+              cursor: "pointer",
+              fontSize: "1rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.2s",
+              zIndex: 10,
+            }}
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            data-ocid="certifications.pagination_next"
+            onClick={() => {
+              nextSlide();
+              setIsPaused(true);
+            }}
+            style={{
+              position: "absolute",
+              right: -20,
+              top: "40%",
+              transform: "translateY(-50%)",
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              border: `2px solid ${isDark ? "#00e5a8" : accent}`,
+              background: isDark ? "#0f172a" : "#fff",
+              color: isDark ? "#00e5a8" : accent,
+              cursor: "pointer",
+              fontSize: "1rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.2s",
+              zIndex: 10,
+            }}
+          >
+            ›
+          </button>
+
+          {/* Dot navigation */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "0.5rem",
+              marginTop: "1.25rem",
+            }}
+          >
+            {CERTIFICATES.map((_, i) => (
+              <button
+                type="button"
+                key={CERTIFICATES[i].title}
+                data-ocid={`certifications.dot.toggle.${i + 1}`}
+                onClick={() => {
+                  setSlideIndex(i);
+                  setIsPaused(true);
+                }}
+                style={{
+                  width: i === slideIndex ? 24 : 10,
+                  height: 10,
+                  borderRadius: 20,
+                  border: "none",
+                  background:
+                    i === slideIndex
+                      ? isDark
+                        ? "#00e5a8"
+                        : accent
+                      : isDark
+                        ? "#1e3a5f"
+                        : "#cbd5e1",
+                  cursor: "pointer",
+                  transition: "all 0.3s",
+                  padding: 0,
+                }}
+              />
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── Contact Section ─────────────────────────────────── */}
+      {/* ── Education ── */}
       <section
-        id="contact"
-        data-ocid="contact.section"
-        className="py-24 relative transition-colors duration-500"
-        style={{ backgroundColor: sectionBg }}
+        id="education"
+        style={{
+          background: isDark ? "#0b1120" : "#f4f7ff",
+          padding: "5rem 1.5rem",
+        }}
       >
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: dm
-              ? "radial-gradient(ellipse 70% 50% at 100% 50%, rgba(0,255,136,0.04) 0%, transparent 70%)"
-              : "radial-gradient(ellipse 70% 50% at 100% 50%, oklch(0.52 0.24 262 / 0.06) 0%, transparent 70%)",
-          }}
-        />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
-          <SectionHeader
-            tag="./connect --target dhruv"
-            title="Get In Touch"
-            subtitle="Have a project in mind or want to discuss cybersecurity? I'm open to opportunities."
-            darkMode={dm}
-          />
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Contact Info */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="space-y-6"
-            >
-              <div>
-                <h3
-                  className="text-lg font-bold mb-6"
-                  style={{ color: dm ? "#e2e8f0" : "#1e293b" }}
-                >
-                  Contact Information
-                </h3>
-                <div className="space-y-4">
-                  {[
-                    {
-                      icon: <Phone className="w-4 h-4" />,
-                      label: "Phone",
-                      value: "+91 7878309814",
-                      href: "tel:+917878309814",
-                    },
-                    {
-                      icon: <Mail className="w-4 h-4" />,
-                      label: "Email",
-                      value: "dhruvsharmads0506@gmail.com",
-                      href: "mailto:dhruvsharmads0506@gmail.com",
-                    },
-                    {
-                      icon: <MapPin className="w-4 h-4" />,
-                      label: "Location",
-                      value: "Bhiwadi, Rajasthan, India",
-                      href: undefined,
-                    },
-                  ].map((item) => (
-                    <div key={item.label} className="flex items-center gap-4">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style={{
-                          background: dm
-                            ? "rgba(0,255,136,0.1)"
-                            : "linear-gradient(135deg, #2563eb15, #7c3aed15)",
-                          color: accentPrimary,
-                          border: dm
-                            ? "1px solid rgba(0,255,136,0.2)"
-                            : "1px solid #2563eb20",
-                        }}
-                      >
-                        {item.icon}
-                      </div>
-                      <div>
-                        <p
-                          className="font-mono text-xs"
-                          style={{ color: textMuted }}
-                        >
-                          {item.label}
-                        </p>
-                        {item.href ? (
-                          <a
-                            href={item.href}
-                            className="font-mono text-sm transition-colors"
-                            style={{ color: dm ? "#94a3b8" : "#475569" }}
-                          >
-                            {item.value}
-                          </a>
-                        ) : (
-                          <p
-                            className="font-mono text-sm"
-                            style={{ color: dm ? "#94a3b8" : "#475569" }}
-                          >
-                            {item.value}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Social links */}
-              <div>
-                <h3
-                  className="font-mono text-sm font-bold mb-4"
-                  style={{ color: textMuted }}
-                >
-                  {"// Social Links"}
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  <motion.a
-                    href="https://github.com/dhruvsharmads0506"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-ocid="contact.link"
-                    whileHover={{ y: -2 }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-mono text-sm"
-                    style={{
-                      background: dm ? "#0d1a2e" : "#f8fafc",
-                      border: dm
-                        ? "1px solid rgba(255,255,255,0.08)"
-                        : "1px solid #e2e8f0",
-                      color: dm ? "#94a3b8" : "#475569",
-                    }}
-                  >
-                    <Github className="w-4 h-4" />
-                    GitHub
-                  </motion.a>
-                  <motion.a
-                    href="https://www.linkedin.com/in/dhruvsharma0506"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-ocid="contact.link"
-                    whileHover={{ y: -2 }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-mono text-sm"
-                    style={{
-                      background: dm ? "#0d1a2e" : "#f8fafc",
-                      border: dm
-                        ? "1px solid rgba(255,255,255,0.08)"
-                        : "1px solid #e2e8f0",
-                      color: "#0891b2",
-                    }}
-                  >
-                    <Linkedin className="w-4 h-4" />
-                    LinkedIn
-                  </motion.a>
-                  <motion.a
-                    href="https://www.instagram.com/dhruv_s_0506"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-ocid="contact.link"
-                    whileHover={{ y: -2 }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-mono text-sm"
-                    style={{
-                      background: dm ? "#0d1a2e" : "#f8fafc",
-                      border: dm
-                        ? "1px solid rgba(255,255,255,0.08)"
-                        : "1px solid #e2e8f0",
-                      color: "#e1306c",
-                    }}
-                  >
-                    <Instagram className="w-4 h-4" />
-                    Instagram
-                  </motion.a>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Contact Form */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
+        <div style={{ maxWidth: 800, margin: "0 auto" }}>
+          {sectionTitle("Education")}
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
+          >
+            {EDUCATION.map((edu, i) => (
               <div
-                className="rounded-2xl p-6"
+                key={edu.institution}
+                data-ocid={`education.item.${i + 1}`}
                 style={{
-                  backgroundColor: dm ? "#0d1220" : "#eef1fb",
-                  border: dm
-                    ? "1px solid rgba(0,255,136,0.15)"
-                    : "1px solid #e2e8f0",
-                  boxShadow: dm
-                    ? "0 4px 24px rgba(0,0,0,0.3)"
-                    : "0 4px 24px rgba(37,99,235,0.08)",
+                  background: isDark ? "#0f172a" : cardBg,
+                  border: `1px solid ${cardBorder}`,
+                  borderRadius: 12,
+                  padding: "1.5rem",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "1rem",
+                  transition: "transform 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLDivElement).style.transform =
+                    "translateX(6px)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLDivElement).style.transform =
+                    "translateX(0)";
                 }}
               >
-                <h3
-                  className="font-mono text-base font-bold mb-6"
-                  style={{ color: dm ? "#94a3b8" : "#475569" }}
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: "50%",
+                    background: isDark ? "#00e5a820" : `${accent}15`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "1.25rem",
+                    flexShrink: 0,
+                  }}
                 >
-                  {"// Send a message"}
-                </h3>
-
-                {formSubmitted ? (
-                  <motion.div
-                    data-ocid="contact.success_state"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex flex-col items-center gap-4 py-10"
+                  🎓
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h3
+                    style={{
+                      fontWeight: 700,
+                      color: isDark ? "#00e5a8" : accent,
+                      marginBottom: "0.25rem",
+                    }}
                   >
-                    <div
-                      className="w-14 h-14 rounded-full flex items-center justify-center"
-                      style={{
-                        background: dm
-                          ? "linear-gradient(135deg, #00ff88, #22d3ee)"
-                          : "linear-gradient(135deg, #2563eb, #7c3aed)",
-                        boxShadow: dm
-                          ? "0 4px 16px rgba(0,255,136,0.35)"
-                          : "0 4px 16px rgba(37,99,235,0.35)",
-                      }}
-                    >
-                      <Lock
-                        className="w-6 h-6"
-                        style={{ color: dm ? "#0a0f1a" : "#ffffff" }}
-                      />
-                    </div>
-                    <p
-                      className="font-mono text-sm text-center font-semibold"
-                      style={{ color: dm ? "#e2e8f0" : "#1e293b" }}
-                    >
-                      Message sent successfully!
-                    </p>
-                    <p
-                      className="font-mono text-xs"
-                      style={{ color: textMuted }}
-                    >
-                      I'll get back to you soon.
-                    </p>
-                  </motion.div>
-                ) : (
-                  <form onSubmit={handleContactSubmit} className="space-y-5">
-                    <div>
-                      <Label
-                        className="font-mono text-xs mb-1.5 block"
-                        style={{ color: textMuted }}
-                      >
-                        {"// name"}
-                      </Label>
-                      <Input
-                        data-ocid="contact.input"
-                        placeholder="Your name"
-                        value={contactForm.name}
-                        onChange={(e) =>
-                          setContactForm((prev) => ({
-                            ...prev,
-                            name: e.target.value,
-                          }))
-                        }
-                        required
-                        className="font-mono text-sm"
+                    {edu.institution}
+                  </h3>
+                  <p
+                    style={{
+                      color: fg,
+                      fontSize: "0.95rem",
+                      marginBottom: "0.25rem",
+                    }}
+                  >
+                    {edu.degree}
+                  </p>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "1rem",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <span style={{ color: mutedFg, fontSize: "0.85rem" }}>
+                      {edu.period}
+                    </span>
+                    {edu.detail && (
+                      <span
                         style={{
-                          background: dm ? "rgba(255,255,255,0.04)" : "#f8fafc",
-                          border: dm
-                            ? "1px solid rgba(255,255,255,0.1)"
-                            : "1px solid #e2e8f0",
-                          color: dm ? "#e2e8f0" : "#1e293b",
+                          background: isDark ? "#00e5a820" : `${accent}15`,
+                          color: isDark ? "#00e5a8" : accent,
+                          borderRadius: 20,
+                          padding: "0.2rem 0.7rem",
+                          fontSize: "0.8rem",
+                          fontWeight: 600,
                         }}
-                      />
-                    </div>
-                    <div>
-                      <Label
-                        className="font-mono text-xs mb-1.5 block"
-                        style={{ color: textMuted }}
                       >
-                        {"// email"}
-                      </Label>
-                      <Input
-                        data-ocid="contact.search_input"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={contactForm.email}
-                        onChange={(e) =>
-                          setContactForm((prev) => ({
-                            ...prev,
-                            email: e.target.value,
-                          }))
-                        }
-                        required
-                        className="font-mono text-sm"
-                        style={{
-                          background: dm ? "rgba(255,255,255,0.04)" : "#f8fafc",
-                          border: dm
-                            ? "1px solid rgba(255,255,255,0.1)"
-                            : "1px solid #e2e8f0",
-                          color: dm ? "#e2e8f0" : "#1e293b",
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <Label
-                        className="font-mono text-xs mb-1.5 block"
-                        style={{ color: textMuted }}
-                      >
-                        {"// message"}
-                      </Label>
-                      <Textarea
-                        data-ocid="contact.textarea"
-                        placeholder="Your message..."
-                        rows={5}
-                        value={contactForm.message}
-                        onChange={(e) =>
-                          setContactForm((prev) => ({
-                            ...prev,
-                            message: e.target.value,
-                          }))
-                        }
-                        required
-                        className="font-mono text-sm resize-none"
-                        style={{
-                          background: dm ? "rgba(255,255,255,0.04)" : "#f8fafc",
-                          border: dm
-                            ? "1px solid rgba(255,255,255,0.1)"
-                            : "1px solid #e2e8f0",
-                          color: dm ? "#e2e8f0" : "#1e293b",
-                        }}
-                      />
-                    </div>
-                    {formError && (
-                      <p
-                        data-ocid="contact.error_state"
-                        className="font-mono text-xs text-red-500"
-                      >
-                        {formError}
-                      </p>
+                        {edu.detail}
+                      </span>
                     )}
-                    <Button
-                      data-ocid="contact.submit_button"
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full font-mono gap-2 transition-all"
-                      style={{
-                        background: dm
-                          ? "linear-gradient(135deg, #00ff88, #22d3ee)"
-                          : "linear-gradient(135deg, #2563eb, #7c3aed)",
-                        color: dm ? "#0a0f1a" : "#ffffff",
-                        border: "none",
-                        boxShadow: dm
-                          ? "0 4px 16px rgba(0,255,136,0.3)"
-                          : "0 4px 16px rgba(37,99,235,0.3)",
-                      }}
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      {isSubmitting ? "Sending..." : "Send Message"}
-                    </Button>
-                  </form>
-                )}
+                  </div>
+                </div>
               </div>
-            </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ─── Footer ──────────────────────────────────────────── */}
-      <footer
-        className="py-10 relative transition-colors duration-500"
+      {/* ── Achievements ── */}
+      <section
+        id="achievements"
+        style={{ padding: "5rem 1.5rem", maxWidth: 1100, margin: "0 auto" }}
+      >
+        {sectionTitle("Achievements & Activities")}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+            gap: "1.25rem",
+          }}
+        >
+          {ACHIEVEMENTS.map((ach, i) => (
+            <div
+              key={ach.title}
+              data-ocid={`achievements.item.${i + 1}`}
+              style={{
+                background: isDark ? "rgba(15,23,42,0.8)" : cardBg,
+                backdropFilter: isDark ? "blur(8px)" : "none",
+                WebkitBackdropFilter: isDark ? "blur(8px)" : "none",
+                border: isDark
+                  ? "1px solid rgba(0,229,168,0.12)"
+                  : `1px solid ${cardBorder}`,
+                borderRadius: 12,
+                padding: "1.25rem",
+                display: "flex",
+                gap: "0.85rem",
+                alignItems: "flex-start",
+                transition:
+                  "transform 0.2s, box-shadow 0.2s, border-color 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLDivElement).style.transform =
+                  "translateY(-4px)";
+                (e.currentTarget as HTMLDivElement).style.boxShadow = isDark
+                  ? "0 8px 24px rgba(0,0,0,0.5), 0 0 16px rgba(0,229,168,0.12)"
+                  : `0 8px 24px ${accent}22`;
+                if (isDark)
+                  (e.currentTarget as HTMLDivElement).style.borderColor =
+                    "rgba(0,229,168,0.3)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLDivElement).style.transform =
+                  "translateY(0)";
+                (e.currentTarget as HTMLDivElement).style.boxShadow = "none";
+              }}
+            >
+              <div style={{ fontSize: "1.75rem", lineHeight: 1 }}>
+                {ach.icon}
+              </div>
+              <div>
+                <h3
+                  style={{
+                    fontWeight: 700,
+                    color: isDark ? "#00e5a8" : fg,
+                    fontSize: "0.95rem",
+                    marginBottom: "0.25rem",
+                  }}
+                >
+                  {ach.title}
+                </h3>
+                <p
+                  style={{
+                    color: mutedFg,
+                    fontSize: "0.85rem",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {ach.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Contact ── */}
+      <section
+        id="contact"
         style={{
-          background: dm
-            ? "linear-gradient(135deg, #070f1c, #0a0f1a)"
-            : "linear-gradient(135deg, #1e293b, #0f172a)",
-          borderTop: dm ? "1px solid rgba(0,255,136,0.1)" : "1px solid #334155",
+          background: isDark ? "#0b1120" : "#f4f7ff",
+          padding: "5rem 1.5rem",
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center"
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          {sectionTitle("Get In Touch")}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              gap: "2rem",
+            }}
+          >
+            {/* Contact info */}
+            <div
+              style={{
+                background: isDark ? "#0f172a" : cardBg,
+                border: `1px solid ${cardBorder}`,
+                borderRadius: 14,
+                padding: "2rem",
+              }}
+            >
+              <h3
                 style={{
-                  background: dm
-                    ? "linear-gradient(135deg, #00ff88, #22d3ee)"
-                    : "linear-gradient(135deg, #2563eb, #7c3aed)",
+                  fontWeight: 700,
+                  color: isDark ? "#00e5a8" : accent,
+                  marginBottom: "1.5rem",
+                  fontSize: "1.1rem",
                 }}
               >
-                <Shield
-                  className="w-3.5 h-3.5"
-                  style={{ color: dm ? "#0a0f1a" : "#ffffff" }}
-                />
-              </div>
-              <span className="font-mono text-sm text-slate-400">
-                © {new Date().getFullYear()} Dhruv Sharma
-              </span>
+                Contact Info
+              </h3>
+              {[
+                {
+                  icon: "📞",
+                  label: "Phone",
+                  value: "+91 7878309814",
+                  href: "tel:+917878309814",
+                },
+                {
+                  icon: "✉️",
+                  label: "Email",
+                  value: "dhruvsharmads0506@gmail.com",
+                  href: "mailto:dhruvsharmads0506@gmail.com",
+                },
+                {
+                  icon: "📍",
+                  label: "Location",
+                  value: "Bhiwadi, Rajasthan, India",
+                },
+                {
+                  icon: "💼",
+                  label: "LinkedIn",
+                  value: "dhruvsharma0506",
+                  href: "https://www.linkedin.com/in/dhruvsharma0506",
+                },
+                {
+                  icon: "🐙",
+                  label: "GitHub",
+                  value: "dhruvsharmads0506",
+                  href: "https://github.com/dhruvsharmads0506",
+                },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.75rem",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  <span style={{ fontSize: "1.2rem" }}>{item.icon}</span>
+                  <div>
+                    <div style={{ color: mutedFg, fontSize: "0.75rem" }}>
+                      {item.label}
+                    </div>
+                    {item.href ? (
+                      <a
+                        href={item.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          color: isDark ? "#00e5a8" : accent,
+                          textDecoration: "none",
+                          fontSize: "0.9rem",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {item.value}
+                      </a>
+                    ) : (
+                      <span style={{ color: fg, fontSize: "0.9rem" }}>
+                        {item.value}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="flex items-center gap-4">
-              <a
-                href="https://github.com/dhruvsharmads0506"
-                target="_blank"
-                rel="noopener noreferrer"
-                data-ocid="footer.link"
-                className="transition-colors text-slate-500 hover:text-blue-400"
-                aria-label="GitHub"
+            {/* Contact form */}
+            <div
+              style={{
+                background: isDark ? "#0f172a" : cardBg,
+                border: `1px solid ${cardBorder}`,
+                borderRadius: 14,
+                padding: "2rem",
+              }}
+            >
+              <h3
+                style={{
+                  fontWeight: 700,
+                  color: isDark ? "#00e5a8" : accent,
+                  marginBottom: "1.5rem",
+                  fontSize: "1.1rem",
+                }}
               >
-                <Github className="w-5 h-5" />
-              </a>
-              <a
-                href="https://www.linkedin.com/in/dhruvsharma0506"
-                target="_blank"
-                rel="noopener noreferrer"
-                data-ocid="footer.link"
-                className="transition-colors text-slate-500 hover:text-blue-400"
-                aria-label="LinkedIn"
+                Send a Message
+              </h3>
+              <form
+                onSubmit={handleSubmit}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
+                }}
               >
-                <Linkedin className="w-5 h-5" />
-              </a>
-              <a
-                href="https://www.instagram.com/dhruv_s_0506"
-                target="_blank"
-                rel="noopener noreferrer"
-                data-ocid="footer.link"
-                className="transition-colors text-slate-500 hover:text-pink-400"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a
-                href="mailto:dhruvsharmads0506@gmail.com"
-                data-ocid="footer.link"
-                className="transition-colors text-slate-500 hover:text-blue-400"
-                aria-label="Email"
-              >
-                <Mail className="w-5 h-5" />
-              </a>
+                <div>
+                  <label
+                    htmlFor="contact-name"
+                    style={{
+                      display: "block",
+                      fontSize: "0.85rem",
+                      fontWeight: 500,
+                      color: mutedFg,
+                      marginBottom: "0.4rem",
+                    }}
+                  >
+                    Name
+                  </label>
+                  <input
+                    id="contact-name"
+                    type="text"
+                    required
+                    data-ocid="contact.name.input"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData((f) => ({ ...f, name: e.target.value }))
+                    }
+                    placeholder="Your name"
+                    style={{
+                      width: "100%",
+                      padding: "0.65rem 0.85rem",
+                      background: inputBg,
+                      border: `1px solid ${inputBorder}`,
+                      borderRadius: 8,
+                      color: fg,
+                      fontSize: "0.9rem",
+                      outline: "none",
+                      boxSizing: "border-box",
+                      fontFamily: "inherit",
+                    }}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="contact-email"
+                    style={{
+                      display: "block",
+                      fontSize: "0.85rem",
+                      fontWeight: 500,
+                      color: mutedFg,
+                      marginBottom: "0.4rem",
+                    }}
+                  >
+                    Email
+                  </label>
+                  <input
+                    id="contact-email"
+                    type="email"
+                    required
+                    data-ocid="contact.email.input"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData((f) => ({ ...f, email: e.target.value }))
+                    }
+                    placeholder="your@email.com"
+                    style={{
+                      width: "100%",
+                      padding: "0.65rem 0.85rem",
+                      background: inputBg,
+                      border: `1px solid ${inputBorder}`,
+                      borderRadius: 8,
+                      color: fg,
+                      fontSize: "0.9rem",
+                      outline: "none",
+                      boxSizing: "border-box",
+                      fontFamily: "inherit",
+                    }}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="contact-message"
+                    style={{
+                      display: "block",
+                      fontSize: "0.85rem",
+                      fontWeight: 500,
+                      color: mutedFg,
+                      marginBottom: "0.4rem",
+                    }}
+                  >
+                    Message
+                  </label>
+                  <textarea
+                    id="contact-message"
+                    required
+                    rows={5}
+                    data-ocid="contact.message.textarea"
+                    value={formData.message}
+                    onChange={(e) =>
+                      setFormData((f) => ({ ...f, message: e.target.value }))
+                    }
+                    placeholder="Your message..."
+                    style={{
+                      width: "100%",
+                      padding: "0.65rem 0.85rem",
+                      background: inputBg,
+                      border: `1px solid ${inputBorder}`,
+                      borderRadius: 8,
+                      color: fg,
+                      fontSize: "0.9rem",
+                      outline: "none",
+                      resize: "vertical",
+                      boxSizing: "border-box",
+                      fontFamily: "inherit",
+                    }}
+                  />
+                </div>
+
+                {formStatus === "success" && (
+                  <div
+                    data-ocid="contact.success_state"
+                    style={{
+                      background: isDark ? "#00e5a820" : "#f0fdf4",
+                      border: "1px solid #86efac",
+                      borderRadius: 8,
+                      padding: "0.75rem 1rem",
+                      color: isDark ? "#00e5a8" : "#16a34a",
+                      fontSize: "0.9rem",
+                      textAlign: "center",
+                    }}
+                  >
+                    ✓ Message sent! I'll get back to you soon.
+                  </div>
+                )}
+                {formStatus === "error" && (
+                  <div
+                    data-ocid="contact.error_state"
+                    style={{
+                      background: "#fef2f2",
+                      border: "1px solid #fecaca",
+                      borderRadius: 8,
+                      padding: "0.75rem 1rem",
+                      color: "#dc2626",
+                      fontSize: "0.9rem",
+                      textAlign: "center",
+                    }}
+                  >
+                    ✗ Something went wrong. Try again.
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={formStatus === "sending"}
+                  data-ocid="contact.submit_button"
+                  style={{
+                    background: isDark ? "#00e5a8" : accent,
+                    color: isDark ? "#020617" : "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    padding: "0.75rem",
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                    cursor:
+                      formStatus === "sending" ? "not-allowed" : "pointer",
+                    opacity: formStatus === "sending" ? 0.7 : 1,
+                    transition: "opacity 0.2s, transform 0.2s",
+                    fontFamily: "inherit",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (formStatus !== "sending") {
+                      (e.currentTarget as HTMLButtonElement).style.transform =
+                        "translateY(-2px)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.transform =
+                      "translateY(0)";
+                  }}
+                >
+                  {formStatus === "sending" ? "Sending..." : "Send Message"}
+                </button>
+              </form>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer
+        style={{
+          background: isDark
+            ? "linear-gradient(180deg, #020617 0%, #010812 100%)"
+            : "#1e293b",
+          color: isDark ? "#00e5a8" : "#94a3b8",
+          borderTop: isDark ? "1px solid rgba(0,229,168,0.12)" : "none",
+          padding: "2.5rem 1.5rem",
+          textAlign: "center",
+        }}
+      >
+        <div style={{ maxWidth: 600, margin: "0 auto" }}>
+          <p
+            style={{
+              fontWeight: 700,
+              fontSize: "1.1rem",
+              color: isDark ? "#00e5a8" : "#f1f5f9",
+              marginBottom: "1rem",
+            }}
+          >
+            Dhruv Sharma
+          </p>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "1.25rem",
+              marginBottom: "1.5rem",
+            }}
+          >
+            <a
+              href="https://github.com/dhruvsharmads0506"
+              target="_blank"
+              rel="noreferrer"
+              data-ocid="footer.github.link"
+              style={{
+                color: isDark ? "#00e5a8" : "#94a3b8",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.color = isDark
+                  ? "#fff"
+                  : "#f1f5f9";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.color = isDark
+                  ? "#00e5a8"
+                  : "#94a3b8";
+              }}
+            >
+              <GithubIcon />
+            </a>
+            <a
+              href="https://www.linkedin.com/in/dhruvsharma0506"
+              target="_blank"
+              rel="noreferrer"
+              data-ocid="footer.linkedin.link"
+              style={{
+                color: isDark ? "#00e5a8" : "#94a3b8",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.color = "#0a66c2";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.color = isDark
+                  ? "#00e5a8"
+                  : "#94a3b8";
+              }}
+            >
+              <LinkedInIcon />
+            </a>
+            <a
+              href="mailto:dhruvsharmads0506@gmail.com"
+              data-ocid="footer.email.link"
+              style={{
+                color: isDark ? "#00e5a8" : "#94a3b8",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.color = isDark
+                  ? "#fff"
+                  : "#f1f5f9";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.color = isDark
+                  ? "#00e5a8"
+                  : "#94a3b8";
+              }}
+            >
+              <EmailIcon />
+            </a>
+            <a
+              href="https://www.instagram.com/dhruv_s_0506"
+              target="_blank"
+              rel="noreferrer"
+              data-ocid="footer.instagram.link"
+              style={{
+                color: isDark ? "#00e5a8" : "#94a3b8",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.color = "#e1306c";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.color = isDark
+                  ? "#00e5a8"
+                  : "#94a3b8";
+              }}
+            >
+              <InstagramIcon />
+            </a>
+          </div>
+          <p style={{ fontSize: "0.8rem" }}>
+            © {new Date().getFullYear()} Dhruv Sharma. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>
